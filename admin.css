@@ -1,0 +1,247 @@
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* BODY */
+body {
+  background: linear-gradient(135deg, #0f172a, #020617);
+  font-family: 'Segoe UI', sans-serif;
+  color: #e2e8f0;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/* CONTAINER */
+.container {
+  width: 100%;
+  max-width: 420px;
+  padding: 20px;
+}
+
+/* CARD */
+.card {
+  background: rgba(15, 23, 42, 0.9);
+  padding: 20px;
+  border-radius: 14px;
+
+  box-shadow: 
+    0 0 25px rgba(59, 130, 246, 0.15),
+    0 0 60px rgba(59, 130, 246, 0.05);
+
+  text-align: center;
+  animation: fadeIn 0.4s ease;
+}
+
+/* HEADER TOPO */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+/* TITULOS */
+h1, h2, h3 {
+  margin-bottom: 15px;
+  color: #f1f5f9;
+}
+
+/* TÍTULO PRINCIPAL */
+.header h1 {
+  font-family: 'Oswald', sans-serif;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* HORÁRIOS */
+.lista-box h3 {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+}
+
+/* FORM GROUP */
+.form-group {
+  margin-bottom: 10px;
+}
+
+/* INPUTS PADRÃO */
+input {
+  width: 100%;
+  padding: 12px;
+  margin-top: 5px;
+
+  border: 1px solid #334155;
+  border-radius: 8px;
+
+  background: #020617;
+  color: #e2e8f0;
+
+  font-size: 14px;
+  transition: 0.3s;
+}
+
+input::placeholder {
+  color: #94a3b8;
+}
+
+input:focus {
+  outline: none;
+  border: 1px solid #3b82f6;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
+}
+
+/* 🔥 DATA E HORA DESTACADOS */
+input[type="date"],
+input[type="time"] {
+  background: #f1f5f9;   /* fundo claro */
+  color: #020617;        /* texto escuro */
+  border: 1px solid #cbd5f5;
+  font-weight: bold;
+}
+
+/* ÍCONE DO CALENDÁRIO VISÍVEL */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(0); /* ícone escuro */
+  cursor: pointer;
+}
+
+/* BOTÕES */
+.btn {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+
+  border: none;
+  border-radius: 8px;
+
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: #fff;
+
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+}
+
+/* BOTÃO LOGOUT */
+.logout {
+  width: auto;
+  padding: 8px 12px;
+  font-size: 13px;
+  background: transparent;
+  border: 1px solid #334155;
+}
+
+.logout:hover {
+  background: #1e293b;
+}
+
+/* MENSAGENS */
+.msg {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+/* LISTA */
+.lista-box {
+  margin-top: 10px;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+/* ITEM */
+li {
+  background: #020617;
+  margin: 8px 0;
+  padding: 12px;
+  border-radius: 8px;
+
+  border-left: 4px solid #3b82f6;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  font-size: 14px;
+  transition: 0.3s;
+}
+
+li:hover {
+  transform: scale(1.02);
+}
+
+/* 🔴 NOME */
+.nome {
+  color: #ef4444;
+  font-weight: bold;
+  text-shadow: 0 0 5px rgba(239, 68, 68, 0.4);
+}
+
+/* STATUS */
+.livre {
+  border-left: 4px solid #22c55e;
+}
+
+.ocupado {
+  border-left: 4px solid #ef4444;
+  opacity: 0.7;
+}
+
+/* BOTÃO EXCLUIR */
+.btn-delete {
+  background: crimson;
+  color: #fff;
+  padding: 5px 8px;
+  font-size: 12px;
+  border-radius: 6px;
+  width: auto;
+  margin-left: 10px;
+}
+
+/* HIDDEN */
+.hidden {
+  display: none;
+}
+
+/* ANIMAÇÃO */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0)
+  }
+}
+
+/* RESPONSIVO */
+@media (max-width: 480px) {
+  .container {
+    padding: 15px;
+  }
+
+  .card {
+    padding: 15px;
+  }
+
+  h1 {
+    font-size: 20px;
+  }
+}

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Barbearia Abner</title>
+
+  <!-- Fontes -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Cinzel:wght@600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="logo">BARBEARIA ABNER</div>
+
+  <nav>
+    <a href="#">Início</a>
+    <a href="#">Serviços</a>
+    <a href="#">Produtos</a>
+    <a href="#">Galeria</a>
+    <a href="admin.html">Painel</a>
+  </nav>
+
+  <div class="menu-mobile">☰</div>
+</header>
+
+<main>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="overlay"></div>
+
+    <div class="conteudo">
+      <h1>Seu estilo começa aqui</h1>
+      <p>Cortes modernos, barba e sobrancelha com qualidade.</p>
+      <a href="#agendamento">
+        <button>Agendar Horário</button>
+      </a>
+    </div>
+  </section>
+
+  <!-- AGENDAMENTO -->
+  <section class="agendamento" id="agendamento">
+    <div class="container">
+      <h2>Agende seu horário</h2>
+      <p>Escolha o melhor dia e horário para você.</p>
+
+      <!-- HORÁRIOS -->
+      <h3>Horários disponíveis</h3>
+      <div id="horarios"></div>
+
+      <!-- FORM -->
+      <form class="form-agendamento">
+        <input type="text" placeholder="Seu nome" required>
+        <input type="tel" placeholder="Seu telefone" required>
+
+        <select required>
+          <option value="">Escolha o serviço</option>
+          <option>Corte</option>
+          <option>Barba</option>
+          <option>Corte + Barba</option>
+          <option>Sobrancelha</option>
+        </select>
+
+        <input type="date" required>
+        <input type="time" required>
+
+        <button type="submit">Agendar pelo WhatsApp</button>
+      </form>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>© 12/11/25 Barbearia Abner — Desenvolvido por Lucas</p>
+</footer>
+
+<!-- SCRIPT -->
+<script>
+// MENU MOBILE
+const menuBtn = document.querySelector(".menu-mobile");
+const nav = document.querySelector("nav");
+
+if (menuBtn && nav) {
+  menuBtn.addEventListener("click", () => {
+    nav.classList.toggle("active");
+  });
+}
+
+// FORMULÁRIO WHATSAPP
+const form = document.querySelector(".form-agendamento");
+
+if (form) {
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const nome = form.querySelector("input[type='text']").value;
+    const telefone = form.querySelector("input[type='tel']").value;
+    const servico = form.querySelector("select").value;
+    const dataInput = form.querySelector("input[type='date']").value;
+    const hora = form.querySelector("input[type='time']").value;
+
+    if (!nome || !telefone || !servico || !dataInput || !hora) {
+      alert("Preencha todos os campos!");
+      return;
+    }
+
+    const [ano, mes, dia] = dataInput.split("-");
+    const dataFormatada = `${dia}/${mes}/${ano}`;
+
+    const mensagem = `💈 *Agendamento Barbearia Abner* 💈
+
+👤 Nome: ${nome}
+📞 Telefone: ${telefone}
+✂️ Serviço: ${servico}
+📅 Data: ${dataFormatada}
+⏰ Hora: ${hora}
+
+⏳ Status: Aguardando confirmação da barbearia.`;
+
+    const numero = "558193205690";
+
+    const url = "https://api.whatsapp.com/send?phone=" + numero + "&text=" + encodeURIComponent(mensagem);
+
+    window.location.href = url;
+  });
+}
+
+// MOSTRAR HORÁRIOS (INTEGRADO COM ADMIN)
+const container = document.getElementById("horarios");
+const horarios = JSON.parse(localStorage.getItem("horarios")) || [];
+
+if (container) {
+  container.innerHTML = "";
+
+  if (horarios.length === 0) {
+    container.innerHTML = "<p>Nenhum horário disponível ainda.</p>";
+  }
+
+  horarios.forEach(h => {
+
+    // Só mostra horários livres
+    if (h.status && h.status !== "livre") return;
+
+    const div = document.createElement("div");
+    div.classList.add("horario-item");
+
+    const [ano, mes, dia] = h.data.split("-");
+    const dataFormatada = `${dia}/${mes}/${ano}`;
+
+    div.innerHTML = `<strong>${dataFormatada}</strong> - ${h.hora} 🟢`;
+
+    // CLICK PRA PREENCHER
+    div.addEventListener("click", () => {
+      document.querySelector("input[type='date']").value = h.data;
+      document.querySelector("input[type='time']").value = h.hora;
+    });
+
+    container.appendChild(div);
+  });
+}
+</script>
+
+</body>
+</html>
