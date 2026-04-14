@@ -1,0 +1,6 @@
+2026/04/13-23:00:02.579 f4c Reusing MANIFEST C:\Users\LUCAS\Barbearia_Abner\whatsapp-api\tokens\barbearia\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2026/04/13-23:00:02.581 f4c Recovering log #1371
+2026/04/13-23:00:02.632 f4c Reusing old log C:\Users\LUCAS\Barbearia_Abner\whatsapp-api\tokens\barbearia\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/001371.log 
+2026/04/13-23:00:12.003 150 Level-0 table #1406: started
+2026/04/13-23:00:12.055 150 Level-0 table #1406: 1278260 bytes OK
+2026/04/13-23:00:12.061 150 Delete type=0 #1371

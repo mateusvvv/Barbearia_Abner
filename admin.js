@@ -1,4 +1,3 @@
-// 🔥 IMPORTS FIREBASE
 import { db, auth } from "./firebase.js";
 
 import {
@@ -6,7 +5,7 @@ import {
   push,
   onValue,
   remove,
-  update
+  get
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 import {
@@ -19,6 +18,8 @@ import {
 // ELEMENTOS
 const msgLogin = document.getElementById("msgLogin");
 const msgAdmin = document.getElementById("msgAdmin");
+
+let listenerAtivo = false;
 
 
 // 🔐 LOGIN
@@ -37,12 +38,11 @@ window.login = async function () {
   } catch (error) {
     msgLogin.innerHTML = "❌ Email ou senha inválidos";
     msgLogin.style.color = "red";
-    console.error(error);
   }
 };
 
 
-// 👁 CONTROLE DE LOGIN
+// 👁 AUTH STATE
 onAuthStateChanged(auth, (user) => {
   if (user) {
     document.getElementById("login").style.display = "none";
@@ -51,60 +51,27 @@ onAuthStateChanged(auth, (user) => {
   } else {
     document.getElementById("login").style.display = "block";
     document.getElementById("painel").style.display = "none";
+
+    // 🔥 reset listener ao sair
+    listenerAtivo = false;
   }
 });
 
 
-// ➕ ADICIONAR HORÁRIO (COM VALIDAÇÃO)
-window.adicionarHorario = function () {
-  const data = document.getElementById("data").value;
-  const hora = document.getElementById("hora").value;
-
-  if (!data || !hora) {
-    msgAdmin.innerHTML = "⚠️ Preencha data e hora!";
-    msgAdmin.style.color = "orange";
-    return;
-  }
-
-  // 🔍 VERIFICAR DUPLICADO
-  onValue(ref(db, "horarios"), (snapshot) => {
-    let duplicado = false;
-
-    snapshot.forEach((child) => {
-      const h = child.val();
-      if (h.data === data && h.hora === hora) {
-        duplicado = true;
-      }
-    });
-
-    if (duplicado) {
-      msgAdmin.innerHTML = "❌ Esse horário já existe!";
-      msgAdmin.style.color = "red";
-      return;
-    }
-
-    // SALVAR
-    push(ref(db, "horarios"), {
-      data,
-      hora,
-      status: "livre"
-    });
-
-    msgAdmin.innerHTML = "✅ Horário adicionado!";
-    msgAdmin.style.color = "lightgreen";
-  }, { onlyOnce: true });
-};
-
-
-// 📡 LISTAR HORÁRIOS
+// 📡 LISTAR
 function carregarHorarios() {
+
+  if (listenerAtivo) return;
+  listenerAtivo = true;
+
   const lista = document.getElementById("lista");
 
   onValue(ref(db, "horarios"), (snapshot) => {
+
     lista.innerHTML = "";
 
     if (!snapshot.exists()) {
-      lista.innerHTML = "<p>Nenhum horário cadastrado</p>";
+      lista.innerHTML = "<p>Nenhum agendamento</p>";
       return;
     }
 
@@ -117,63 +84,101 @@ function carregarHorarios() {
       });
     });
 
-    // 📅 ORDENAR POR DATA + HORA
-    dados.sort((a, b) => {
-      const d1 = new Date(a.data + " " + a.hora);
-      const d2 = new Date(b.data + " " + b.hora);
-      return d1 - d2;
-    });
+    dados.sort((a, b) =>
+      new Date(a.data + " " + a.hora) -
+      new Date(b.data + " " + b.hora)
+    );
 
     dados.forEach((h) => {
-      const status = h.status === "livre"
-        ? "🟢 Livre"
-        : "🔴 Ocupado";
-
       lista.innerHTML += `
-        <li class="card ${h.status}">
-          <strong>${h.data}</strong> - ${h.hora} <br>
-          ${status} <br>
+        <li class="card agendado">
+          <strong>📅 ${h.data}</strong> - ${h.hora} <br>
+          🟢 ${h.status || "agendado"} <br><br>
 
-          ${h.nome ? `👤 ${h.nome}` : ""}
-          ${h.servico ? `<br>✂️ ${h.servico}` : ""}
+          👤 ${h.nome} <br>
+          📞 ${h.telefone} <br>
+          ✂️ ${h.servico}
 
           <br><br>
-
-          ${
-            h.status === "ocupado"
-              ? `<button onclick="cancelar('${h.id}')">Cancelar</button>`
-              : ""
-          }
 
           <button onclick="excluir('${h.id}')">Excluir</button>
         </li>
       `;
     });
+
   });
 }
 
 
-// ❌ CANCELAR (LIBERA HORÁRIO)
-window.cancelar = function (id) {
-  update(ref(db, "horarios/" + id), {
-    status: "livre",
-    nome: null,
-    telefone: null,
-    servico: null
-  });
+// ➕ ADICIONAR
+window.adicionarHorario = async function () {
 
-  msgAdmin.innerHTML = "✅ Horário liberado!";
-  msgAdmin.style.color = "lightgreen";
+  const data = document.getElementById("data").value;
+  const hora = document.getElementById("hora").value;
+  const nome = document.getElementById("nome").value;
+  const telefone = document.getElementById("telefone").value;
+  const servico = document.getElementById("servico").value;
+
+  if (!data || !hora || !nome || !telefone || !servico) {
+    msgAdmin.innerHTML = "⚠️ Preencha tudo!";
+    msgAdmin.style.color = "orange";
+    return;
+  }
+
+  try {
+    const snapshot = await get(ref(db, "horarios"));
+
+    let duplicado = false;
+
+    if (snapshot.exists()) {
+      snapshot.forEach((child) => {
+        const h = child.val();
+        if (h.data === data && h.hora === hora) {
+          duplicado = true;
+        }
+      });
+    }
+
+    if (duplicado) {
+      msgAdmin.innerHTML = "❌ Já existe agendamento nesse horário!";
+      msgAdmin.style.color = "red";
+      return;
+    }
+
+    await push(ref(db, "horarios"), {
+      data,
+      hora,
+      nome,
+      telefone,
+      servico,
+      status: "agendado"
+    });
+
+    msgAdmin.innerHTML = "✅ Cliente agendado!";
+    msgAdmin.style.color = "lightgreen";
+
+  } catch (error) {
+    console.error(error);
+    msgAdmin.innerHTML = "❌ Erro ao salvar!";
+    msgAdmin.style.color = "red";
+  }
 };
 
 
 // 🗑 EXCLUIR
-window.excluir = function (id) {
-  if (confirm("Excluir horário?")) {
-    remove(ref(db, "horarios/" + id));
+window.excluir = async function (id) {
+  if (!confirm("Excluir agendamento?")) return;
 
-    msgAdmin.innerHTML = "🗑️ Horário excluído!";
+  try {
+    await remove(ref(db, "horarios/" + id));
+
+    msgAdmin.innerHTML = "🗑️ Removido com sucesso!";
     msgAdmin.style.color = "orange";
+
+  } catch (error) {
+    console.error(error);
+    msgAdmin.innerHTML = "❌ Erro ao excluir!";
+    msgAdmin.style.color = "red";
   }
 };
 
