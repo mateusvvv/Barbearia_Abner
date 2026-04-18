@@ -177,10 +177,12 @@ select:disabled {
 input[type="date"],
 input[type="time"] {
   background: #f8fafc;
-  border-color: #d4af37;
+  border: 0;
   color: #090909;
   color-scheme: light;
   font-weight: 800;
+  min-height: 42px;
+  padding: 8px 0 2px;
 }
 
 input[type="date"]::-webkit-datetime-edit,
@@ -194,6 +196,30 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   cursor: pointer;
   filter: none;
   opacity: 1;
+}
+
+.date-time-field {
+  background: #f8fafc;
+  border: 2px solid rgba(212, 175, 55, 0.75);
+  border-radius: 8px;
+  display: grid;
+  gap: 2px;
+  padding: 10px 12px;
+}
+
+.date-time-field:focus-within {
+  border-color: #f1c94d;
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.22);
+}
+
+.date-time-field span {
+  color: #4b5563;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.date-time-field input:focus {
+  box-shadow: none;
 }
 
 .btn {
@@ -386,6 +412,16 @@ li button {
   select {
     font-size: 16px;
     min-height: 52px;
+  }
+
+  .date-time-field {
+    min-height: 76px;
+    padding: 12px 14px;
+  }
+
+  .date-time-field input {
+    font-size: 17px;
+    min-height: 36px;
   }
 
   h1 {
