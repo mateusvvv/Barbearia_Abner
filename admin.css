@@ -128,15 +128,146 @@ small {
   top: 18px;
 }
 
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
 .form-group {
   margin-top: 13px;
   text-align: left;
+}
+
+.admin-agenda {
+  display: grid;
+  gap: 14px;
+}
+
+.admin-calendario {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(212, 175, 55, 0.18);
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.calendario-topo {
+  align-items: center;
+  display: grid;
+  grid-template-columns: 40px 1fr 40px;
+  gap: 8px;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.calendario-topo strong {
+  color: #fff;
+  font-size: 18px;
+}
+
+.btn-calendario {
+  width: 40px;
+  height: 40px;
+  background: #181818;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 26px;
+  font-weight: 800;
+}
+
+.legenda {
+  color: #b9b9b9;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+
+.legenda span {
+  align-items: center;
+  display: inline-flex;
+  gap: 6px;
+}
+
+.dot {
+  border-radius: 999px;
+  display: inline-block;
+  height: 10px;
+  width: 10px;
+}
+
+.dot.vagas {
+  background: #22c55e;
+}
+
+.dot.ocupado {
+  background: #ef4444;
+}
+
+.dot.sem-agenda {
+  background: #777;
+}
+
+.dias-semana,
+.calendario-dias {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.dias-semana {
+  color: #aaa;
+  font-size: 11px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.dia-vazio {
+  min-height: 58px;
+}
+
+.dia-calendario {
+  min-height: 58px;
+  padding: 7px 5px;
+  background: #141414;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 4px solid #777;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  display: grid;
+  align-content: space-between;
+  text-align: left;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.dia-calendario strong {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.dia-calendario span {
+  color: #b9b9b9;
+  font-size: 9px;
+  line-height: 1.15;
+}
+
+.dia-calendario.vagas {
+  border-left-color: #22c55e;
+}
+
+.dia-calendario.ocupado {
+  border-left-color: #ef4444;
+}
+
+.dia-calendario.selecionado,
+.dia-calendario:hover {
+  border-color: #d4af37;
+  transform: translateY(-2px);
+}
+
+.data-escolhida {
+  color: #b9b9b9;
+  font-size: 12px;
+  margin-top: 8px;
 }
 
 label {
@@ -402,10 +533,6 @@ li button {
 
   .card {
     padding: 16px;
-  }
-
-  .form-grid {
-    grid-template-columns: 1fr;
   }
 
   input,

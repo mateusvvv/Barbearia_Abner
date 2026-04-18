@@ -23,8 +23,18 @@ const msgAdmin = document.getElementById("msgAdmin");
 const statusHorario = document.getElementById("statusHorario");
 const dadosCliente = document.getElementById("dadosCliente");
 const filtroHorarios = document.getElementById("filtroHorarios");
+const inputData = document.getElementById("data");
+const inputHora = document.getElementById("hora");
+const textoHora = document.getElementById("textoHora");
+const dataEscolhida = document.getElementById("dataEscolhida");
+const adminCalendarioDias = document.getElementById("adminCalendarioDias");
+const adminMesAtual = document.getElementById("adminMesAtual");
+const adminMesAnterior = document.getElementById("adminMesAnterior");
+const adminProximoMes = document.getElementById("adminProximoMes");
 let horariosCadastrados = [];
 let cancelarListenerHorarios = null;
+let dataAtivaAdmin = "";
+let mesVisivelAdmin = new Date();
 
 function atualizarCamposCliente() {
   const clienteMarcado = statusHorario.value === "ocupado";
@@ -44,6 +54,104 @@ function formatarData(data) {
   return `${dia}/${mes}/${ano}`;
 }
 
+function formatarChaveData(data) {
+  const ano = data.getFullYear();
+  const mes = String(data.getMonth() + 1).padStart(2, "0");
+  const dia = String(data.getDate()).padStart(2, "0");
+  return `${ano}-${mes}-${dia}`;
+}
+
+function obterStatusDia(data) {
+  const horariosDoDia = horariosCadastrados.filter(h => h.data === data);
+  const livres = horariosDoDia.filter(h => h.status === "livre").length;
+  const ocupados = horariosDoDia.filter(h => h.status === "ocupado").length;
+
+  if (horariosDoDia.length === 0) {
+    return {
+      classe: "sem-agenda",
+      texto: "Sem agenda"
+    };
+  }
+
+  if (livres > 0) {
+    return {
+      classe: "vagas",
+      texto: `${livres} vaga${livres > 1 ? "s" : ""}`
+    };
+  }
+
+  return {
+    classe: "ocupado",
+    texto: `${ocupados} marcado${ocupados > 1 ? "s" : ""}`
+  };
+}
+
+function atualizarPassoHora() {
+  const temData = Boolean(dataAtivaAdmin);
+
+  inputHora.disabled = !temData;
+  textoHora.textContent = temData
+    ? "Agora escolha a hora para essa data"
+    : "Escolha uma data primeiro";
+  dataEscolhida.textContent = temData
+    ? `Data selecionada: ${formatarData(dataAtivaAdmin)}`
+    : "Nenhuma data selecionada.";
+}
+
+function selecionarDataAdmin(data) {
+  dataAtivaAdmin = data;
+  inputData.value = data;
+  inputHora.disabled = false;
+  inputHora.focus();
+  atualizarPassoHora();
+  renderizarCalendarioAdmin();
+}
+
+function renderizarCalendarioAdmin() {
+  adminCalendarioDias.innerHTML = "";
+
+  const ano = mesVisivelAdmin.getFullYear();
+  const mes = mesVisivelAdmin.getMonth();
+  const nomesMeses = [
+    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+  ];
+
+  adminMesAtual.textContent = `${nomesMeses[mes]} ${ano}`;
+
+  const primeiroDia = new Date(ano, mes, 1);
+  const ultimoDia = new Date(ano, mes + 1, 0);
+  const totalDias = ultimoDia.getDate();
+
+  for (let i = 0; i < primeiroDia.getDay(); i++) {
+    const vazio = document.createElement("div");
+    vazio.className = "dia-vazio";
+    adminCalendarioDias.appendChild(vazio);
+  }
+
+  for (let dia = 1; dia <= totalDias; dia++) {
+    const data = new Date(ano, mes, dia);
+    const chave = formatarChaveData(data);
+    const status = obterStatusDia(chave);
+    const botao = document.createElement("button");
+
+    botao.type = "button";
+    botao.className = `dia-calendario ${status.classe}`;
+
+    if (chave === dataAtivaAdmin) {
+      botao.classList.add("selecionado");
+    }
+
+    botao.innerHTML = `
+      <strong>${dia}</strong>
+      <span>${status.texto}</span>
+    `;
+
+    botao.addEventListener("click", () => selecionarDataAdmin(chave));
+    adminCalendarioDias.appendChild(botao);
+  }
+}
+
 function atualizarResumo(dados) {
   const livres = dados.filter(h => h.status === "livre").length;
   const ocupados = dados.filter(h => h.status === "ocupado").length;
@@ -52,6 +160,19 @@ function atualizarResumo(dados) {
   document.getElementById("totalLivres").textContent = livres;
   document.getElementById("totalOcupados").textContent = ocupados;
 }
+
+adminMesAnterior.addEventListener("click", () => {
+  mesVisivelAdmin = new Date(mesVisivelAdmin.getFullYear(), mesVisivelAdmin.getMonth() - 1, 1);
+  renderizarCalendarioAdmin();
+});
+
+adminProximoMes.addEventListener("click", () => {
+  mesVisivelAdmin = new Date(mesVisivelAdmin.getFullYear(), mesVisivelAdmin.getMonth() + 1, 1);
+  renderizarCalendarioAdmin();
+});
+
+renderizarCalendarioAdmin();
+atualizarPassoHora();
 
 
 // 🔐 LOGIN
@@ -97,8 +218,8 @@ onAuthStateChanged(auth, (user) => {
 
 // ➕ ADICIONAR HORÁRIO (SEM BUG)
 window.adicionarHorario = async function () {
-  const data = document.getElementById("data").value;
-  const hora = document.getElementById("hora").value;
+  const data = inputData.value;
+  const hora = inputHora.value;
   const nome = document.getElementById("nome").value.trim();
   const telefone = document.getElementById("telefone").value.trim();
   const servico = document.getElementById("servico").value;
@@ -152,13 +273,16 @@ window.adicionarHorario = async function () {
     await push(ref(db, "horarios"), dadosCliente);
   }
 
-  document.getElementById("data").value = "";
-  document.getElementById("hora").value = "";
+  inputData.value = "";
+  inputHora.value = "";
+  dataAtivaAdmin = "";
   document.getElementById("nome").value = "";
   document.getElementById("telefone").value = "";
   document.getElementById("servico").value = "";
   statusHorario.value = "ocupado";
   atualizarCamposCliente();
+  atualizarPassoHora();
+  renderizarCalendarioAdmin();
 
   msgAdmin.innerHTML = status === "ocupado"
     ? "✅ Cliente adicionado!"
@@ -175,6 +299,7 @@ function carregarHorarios() {
     if (!snapshot.exists()) {
       horariosCadastrados = [];
       atualizarResumo(horariosCadastrados);
+      renderizarCalendarioAdmin();
       renderizarHorarios(horariosCadastrados);
       return;
     }
@@ -195,6 +320,7 @@ function carregarHorarios() {
 
     horariosCadastrados = dados;
     atualizarResumo(horariosCadastrados);
+    renderizarCalendarioAdmin();
     renderizarHorarios(horariosCadastrados);
   });
 }

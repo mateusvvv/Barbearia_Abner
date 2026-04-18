@@ -65,21 +65,45 @@
         <h3>Novo horário</h3>
         <p class="card-text">Cadastre uma vaga livre ou um cliente já marcado.</p>
 
-        <div class="form-grid">
+        <div class="admin-agenda">
           <div class="form-group">
-            <label>Data</label>
-            <div class="date-time-field">
-              <input type="date" id="data">
-              <span>Toque para escolher a data</span>
+            <label>Escolha a data</label>
+            <input type="date" id="data" hidden>
+
+            <div class="admin-calendario">
+              <div class="calendario-topo">
+                <button type="button" id="adminMesAnterior" class="btn-calendario">‹</button>
+                <strong id="adminMesAtual">Carregando</strong>
+                <button type="button" id="adminProximoMes" class="btn-calendario">›</button>
+              </div>
+
+              <div class="legenda">
+                <span><i class="dot vagas"></i> Vagas</span>
+                <span><i class="dot ocupado"></i> Marcado</span>
+                <span><i class="dot sem-agenda"></i> Sem agenda</span>
+              </div>
+
+              <div class="dias-semana">
+                <span>Dom</span>
+                <span>Seg</span>
+                <span>Ter</span>
+                <span>Qua</span>
+                <span>Qui</span>
+                <span>Sex</span>
+                <span>Sáb</span>
+              </div>
+
+              <div id="adminCalendarioDias" class="calendario-dias"></div>
             </div>
           </div>
 
           <div class="form-group">
-            <label>Hora</label>
+            <label>Depois escolha a hora</label>
             <div class="date-time-field">
-              <input type="time" id="hora">
-              <span>Toque para escolher a hora</span>
+              <input type="time" id="hora" disabled>
+              <span id="textoHora">Escolha uma data primeiro</span>
             </div>
+            <p id="dataEscolhida" class="data-escolhida">Nenhuma data selecionada.</p>
           </div>
         </div>
 
