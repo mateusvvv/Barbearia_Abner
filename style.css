@@ -29,19 +29,38 @@ header {
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: 18px;
-  padding: 15px 22px;
+  padding: 13px 22px;
   border-bottom: 1px solid rgba(212, 175, 55, 0.28);
   background: rgba(8, 8, 8, 0.88);
   backdrop-filter: blur(12px);
 }
 
 .logo {
+  align-items: center;
+  display: inline-flex;
+  flex-direction: column;
   font-family: 'Cinzel', serif;
-  font-size: clamp(18px, 4vw, 26px);
+  justify-self: start;
+  line-height: 1;
   text-align: center;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.logo span {
+  color: #f8fafc;
+  font-family: 'Poppins', 'Segoe UI', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.logo strong {
   background: linear-gradient(45deg, #d4af37, #ffd700);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  font-size: clamp(22px, 4vw, 31px);
+  letter-spacing: 1px;
 }
 
 nav {
@@ -51,19 +70,54 @@ nav {
 }
 
 nav a {
+  align-items: center;
+  border-radius: 8px;
   color: #ddd;
+  display: inline-flex;
   font-size: 14px;
+  min-height: 38px;
+  padding: 8px 10px;
   text-decoration: none;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 nav a:hover {
+  background: rgba(212, 175, 55, 0.12);
   color: #fff;
 }
 
 .menu-mobile {
   display: none;
-  font-size: 24px;
+  width: 46px;
+  height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  flex-direction: column;
+  background: #151515;
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 8px;
   cursor: pointer;
+}
+
+.menu-mobile span {
+  width: 20px;
+  height: 2px;
+  border-radius: 999px;
+  background: #d4af37;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.menu-mobile.active span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.menu-mobile.active span:nth-child(2) {
+  opacity: 0;
+}
+
+.menu-mobile.active span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
 }
 
 .hero {
@@ -361,28 +415,76 @@ footer {
 
 @media (max-width: 900px) {
   header {
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    padding: 10px 14px;
   }
 
   nav {
     display: none;
     position: absolute;
-    top: 64px;
+    top: calc(100% + 8px);
     right: 12px;
-    width: min(260px, calc(100vw - 24px));
-    padding: 16px;
+    left: 12px;
+    width: auto;
+    padding: 10px;
     border: 1px solid rgba(212, 175, 55, 0.24);
     border-radius: 8px;
-    background: #080808;
+    background: rgba(8, 8, 8, 0.98);
+    box-shadow: 0 22px 50px rgba(0, 0, 0, 0.45);
     flex-direction: column;
+    gap: 6px;
+    justify-self: stretch;
   }
 
   nav.active {
     display: flex;
   }
 
+  nav a {
+    width: 100%;
+    min-height: 46px;
+    justify-content: space-between;
+    padding: 12px 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    font-size: 15px;
+  }
+
+  nav a::after {
+    content: "›";
+    color: #d4af37;
+    font-size: 22px;
+    line-height: 1;
+  }
+
+  nav a[href="admin.html"] {
+    background: #d4af37;
+    color: #090909;
+    font-weight: 800;
+  }
+
+  nav a[href="admin.html"]::after {
+    color: #090909;
+  }
+
   .menu-mobile {
-    display: block;
+    display: inline-flex;
+    justify-self: end;
+  }
+
+  .logo {
+    align-items: flex-start;
+    justify-self: start;
+  }
+
+  .logo span {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+  }
+
+  .logo strong {
+    font-size: 25px;
   }
 
   .agenda-layout {
@@ -391,8 +493,16 @@ footer {
 }
 
 @media (max-width: 560px) {
+  header {
+    min-height: 64px;
+  }
+
   .container {
     padding: 0;
+  }
+
+  .logo strong {
+    font-size: 22px;
   }
 
   .agendamento {

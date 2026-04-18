@@ -13,7 +13,10 @@
 <body>
 
 <header>
-  <div class="logo">BARBEARIA ABNER</div>
+  <a class="logo" href="#" aria-label="Barbearia Abner - início">
+    <span>Barbearia</span>
+    <strong>Abner</strong>
+  </a>
 
   <nav>
     <a href="#">Início</a>
@@ -23,7 +26,11 @@
     <a href="admin.html">Painel</a>
   </nav>
 
-  <div class="menu-mobile">☰</div>
+  <button class="menu-mobile" type="button" aria-label="Abrir menu" aria-expanded="false">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
 </header>
 
 <main>
@@ -122,6 +129,16 @@ const nav = document.querySelector("nav");
 if (menuBtn && nav) {
   menuBtn.addEventListener("click", () => {
     nav.classList.toggle("active");
+    menuBtn.classList.toggle("active");
+    menuBtn.setAttribute("aria-expanded", nav.classList.contains("active"));
+  });
+
+  nav.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => {
+      nav.classList.remove("active");
+      menuBtn.classList.remove("active");
+      menuBtn.setAttribute("aria-expanded", "false");
+    });
   });
 }
 
