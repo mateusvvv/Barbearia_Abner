@@ -45,9 +45,43 @@
   <section class="agendamento" id="agendamento">
     <div class="container">
       <h2>Agende seu horário</h2>
-      <p>Escolha o melhor dia e horário para você.</p>
+      <p>Veja os dias com vagas e escolha um horário livre.</p>
 
-    
+      <div class="agenda-layout">
+        <div class="calendario-box">
+          <div class="calendario-topo">
+            <button type="button" id="mesAnterior" class="btn-calendario">‹</button>
+            <strong id="mesAtual">Carregando</strong>
+            <button type="button" id="proximoMes" class="btn-calendario">›</button>
+          </div>
+
+          <div class="legenda">
+            <span><i class="dot vagas"></i> Vagas</span>
+            <span><i class="dot indisponivel"></i> Indisponível</span>
+            <span><i class="dot sem-agenda"></i> Sem agenda</span>
+          </div>
+
+          <div class="dias-semana">
+            <span>Dom</span>
+            <span>Seg</span>
+            <span>Ter</span>
+            <span>Qua</span>
+            <span>Qui</span>
+            <span>Sex</span>
+            <span>Sáb</span>
+          </div>
+
+          <div id="calendarioDias" class="calendario-dias"></div>
+        </div>
+
+        <div class="horarios-box">
+          <h3 id="tituloDia">Selecione um dia</h3>
+          <p id="resumoDia">Os horários disponíveis aparecem aqui.</p>
+
+          <!-- 🔥 HORÁRIOS ESTILO APP -->
+          <div id="horarios" class="calendario"></div>
+        </div>
+      </div>
 
       <!-- FORM -->
       <form class="form-agendamento">
@@ -62,8 +96,9 @@
           <option>Sobrancelha</option>
         </select>
 
-        <input type="date" required>
-        <input type="time" required>
+        <!-- escondidos (preenchidos automaticamente) -->
+        <input type="date" id="dataSelecionada" hidden>
+        <input type="time" id="horaSelecionada" hidden>
 
         <button type="submit">Agendar pelo WhatsApp</button>
       </form>
@@ -76,8 +111,10 @@
   <p>© 12/11/25 Barbearia Abner — Desenvolvido por Lucas</p>
 </footer>
 
-<!-- SCRIPT -->
-<script>
+<script type="module">
+import { db } from "./firebase.js";
+import { ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
 // MENU MOBILE
 const menuBtn = document.querySelector(".menu-mobile");
 const nav = document.querySelector("nav");
@@ -88,28 +125,231 @@ if (menuBtn && nav) {
   });
 }
 
+
+// 🔥 CARREGAR HORÁRIOS DO FIREBASE
+const container = document.getElementById("horarios");
+const calendarioDias = document.getElementById("calendarioDias");
+const mesAtual = document.getElementById("mesAtual");
+const mesAnterior = document.getElementById("mesAnterior");
+const proximoMes = document.getElementById("proximoMes");
+const tituloDia = document.getElementById("tituloDia");
+const resumoDia = document.getElementById("resumoDia");
+const dataSelecionada = document.getElementById("dataSelecionada");
+const horaSelecionada = document.getElementById("horaSelecionada");
+let horarios = [];
+let dataAtiva = "";
+let mesVisivel = new Date();
+
+function limparSelecao() {
+  document.querySelectorAll(".horario")
+    .forEach(el => el.classList.remove("selecionado"));
+
+  dataSelecionada.value = "";
+  horaSelecionada.value = "";
+}
+
+function formatarDataBR(data) {
+  const [ano, mes, dia] = data.split("-");
+  return `${dia}/${mes}/${ano}`;
+}
+
+function formatarChaveData(data) {
+  const ano = data.getFullYear();
+  const mes = String(data.getMonth() + 1).padStart(2, "0");
+  const dia = String(data.getDate()).padStart(2, "0");
+  return `${ano}-${mes}-${dia}`;
+}
+
+function obterStatusDia(data) {
+  const horariosDoDia = horarios.filter(h => h.data === data);
+  const livres = horariosDoDia.filter(h => h.status !== "ocupado").length;
+
+  if (horariosDoDia.length === 0) {
+    return {
+      classe: "sem-agenda",
+      texto: "Sem agenda",
+      livres,
+      total: 0
+    };
+  }
+
+  if (livres > 0) {
+    return {
+      classe: "vagas",
+      texto: `${livres} vaga${livres > 1 ? "s" : ""}`,
+      livres,
+      total: horariosDoDia.length
+    };
+  }
+
+  return {
+    classe: "indisponivel",
+    texto: "Indisponível",
+    livres,
+    total: horariosDoDia.length
+  };
+}
+
+function renderizarCalendario() {
+  calendarioDias.innerHTML = "";
+
+  const ano = mesVisivel.getFullYear();
+  const mes = mesVisivel.getMonth();
+  const nomesMeses = [
+    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+  ];
+
+  mesAtual.textContent = `${nomesMeses[mes]} ${ano}`;
+
+  const primeiroDia = new Date(ano, mes, 1);
+  const ultimoDia = new Date(ano, mes + 1, 0);
+  const totalDias = ultimoDia.getDate();
+
+  for (let i = 0; i < primeiroDia.getDay(); i++) {
+    const vazio = document.createElement("div");
+    vazio.className = "dia-vazio";
+    calendarioDias.appendChild(vazio);
+  }
+
+  for (let dia = 1; dia <= totalDias; dia++) {
+    const data = new Date(ano, mes, dia);
+    const chave = formatarChaveData(data);
+    const status = obterStatusDia(chave);
+    const botao = document.createElement("button");
+
+    botao.type = "button";
+    botao.className = `dia-calendario ${status.classe}`;
+
+    if (chave === dataAtiva) {
+      botao.classList.add("selecionado");
+    }
+
+    botao.innerHTML = `
+      <strong>${dia}</strong>
+      <span>${status.texto}</span>
+    `;
+
+    botao.addEventListener("click", () => {
+      dataAtiva = chave;
+      limparSelecao();
+      renderizarCalendario();
+      renderizarHorariosDoDia();
+    });
+
+    calendarioDias.appendChild(botao);
+  }
+}
+
+function renderizarHorariosDoDia() {
+  container.innerHTML = "";
+  limparSelecao();
+
+  if (!dataAtiva) {
+    tituloDia.textContent = "Selecione um dia";
+    resumoDia.textContent = "Os horários disponíveis aparecem aqui.";
+    container.innerHTML = "<p class=\"estado-vazio\">Toque em um dia no calendário.</p>";
+    return;
+  }
+
+  const statusDia = obterStatusDia(dataAtiva);
+  const horariosDoDia = horarios.filter(h => h.data === dataAtiva);
+
+  tituloDia.textContent = formatarDataBR(dataAtiva);
+  resumoDia.textContent = statusDia.total === 0
+    ? "Nenhum horário cadastrado para este dia."
+    : `${statusDia.livres} vaga${statusDia.livres === 1 ? "" : "s"} livre${statusDia.livres === 1 ? "" : "s"} de ${statusDia.total} horário${statusDia.total === 1 ? "" : "s"}.`;
+
+  if (horariosDoDia.length === 0) {
+    container.innerHTML = "<p class=\"estado-vazio\">Sem horários cadastrados.</p>";
+    return;
+  }
+
+  horariosDoDia.forEach(h => {
+    const div = document.createElement("div");
+    const status = h.status === "ocupado" ? "ocupado" : "livre";
+
+    div.classList.add("horario", status);
+
+    const textoStatus = status === "ocupado" ? "Marcado" : "Livre";
+
+    div.innerHTML = `
+      <strong>${h.hora}</strong><br>
+      <span>${textoStatus}</span>
+    `;
+
+    if (status === "livre") {
+      div.addEventListener("click", () => {
+        limparSelecao();
+        div.classList.add("selecionado");
+        dataSelecionada.value = h.data;
+        horaSelecionada.value = h.hora;
+      });
+    }
+
+    container.appendChild(div);
+  });
+}
+
+mesAnterior.addEventListener("click", () => {
+  mesVisivel = new Date(mesVisivel.getFullYear(), mesVisivel.getMonth() - 1, 1);
+  renderizarCalendario();
+});
+
+proximoMes.addEventListener("click", () => {
+  mesVisivel = new Date(mesVisivel.getFullYear(), mesVisivel.getMonth() + 1, 1);
+  renderizarCalendario();
+});
+
+onValue(ref(db, "horarios"), (snapshot) => {
+  horarios = [];
+
+  if (snapshot.exists()) {
+    snapshot.forEach((child) => {
+      horarios.push({
+        id: child.key,
+        ...child.val()
+      });
+    });
+  }
+
+  horarios.sort((a, b) => {
+    return new Date(a.data + "T" + a.hora) - new Date(b.data + "T" + b.hora);
+  });
+
+  if (!dataAtiva && horarios.length > 0) {
+    const primeiroDiaComVaga = horarios.find(h => h.status !== "ocupado");
+    dataAtiva = primeiroDiaComVaga ? primeiroDiaComVaga.data : horarios[0].data;
+    const [ano, mes] = dataAtiva.split("-");
+    mesVisivel = new Date(Number(ano), Number(mes) - 1, 1);
+  }
+
+  renderizarCalendario();
+  renderizarHorariosDoDia();
+});
+
+
 // FORMULÁRIO WHATSAPP
 const form = document.querySelector(".form-agendamento");
 
-if (form) {
-  form.addEventListener("submit", function (e) {
-    e.preventDefault();
+form.addEventListener("submit", function (e) {
+  e.preventDefault();
 
-    const nome = form.querySelector("input[type='text']").value;
-    const telefone = form.querySelector("input[type='tel']").value;
-    const servico = form.querySelector("select").value;
-    const dataInput = form.querySelector("input[type='date']").value;
-    const hora = form.querySelector("input[type='time']").value;
+  const nome = form.querySelector("input[type='text']").value;
+  const telefone = form.querySelector("input[type='tel']").value;
+  const servico = form.querySelector("select").value;
+  const data = document.getElementById("dataSelecionada").value;
+  const hora = document.getElementById("horaSelecionada").value;
 
-    if (!nome || !telefone || !servico || !dataInput || !hora) {
-      alert("Preencha todos os campos!");
-      return;
-    }
+  if (!nome || !telefone || !servico || !data || !hora) {
+    alert("Selecione um horário disponível!");
+    return;
+  }
 
-    const [ano, mes, dia] = dataInput.split("-");
-    const dataFormatada = `${dia}/${mes}/${ano}`;
+  const [ano, mes, dia] = data.split("-");
+  const dataFormatada = `${dia}/${mes}/${ano}`;
 
-    const mensagem = `💈 *Agendamento Barbearia Abner* 💈
+  const mensagem = `💈 *Agendamento Barbearia Abner* 💈
 
 👤 Nome: ${nome}
 📞 Telefone: ${telefone}
@@ -119,47 +359,13 @@ if (form) {
 
 ⏳ Status: Aguardando confirmação da barbearia.`;
 
-    const numero = "558193205690";
+  const numero = "558193205690";
 
-    const url = "https://api.whatsapp.com/send?phone=" + numero + "&text=" + encodeURIComponent(mensagem);
+  const url = "https://api.whatsapp.com/send?phone=" + numero + "&text=" + encodeURIComponent(mensagem);
 
-    window.location.href = url;
-  });
-}
+  window.location.href = url;
+});
 
-// MOSTRAR HORÁRIOS (INTEGRADO COM ADMIN)
-const container = document.getElementById("horarios");
-const horarios = JSON.parse(localStorage.getItem("horarios")) || [];
-
-if (container) {
-  container.innerHTML = "";
-
-  if (horarios.length === 0) {
-    container.innerHTML = "<p>Nenhum horário disponível ainda.</p>";
-  }
-
-  horarios.forEach(h => {
-
-    // Só mostra horários livres
-    if (h.status && h.status !== "livre") return;
-
-    const div = document.createElement("div");
-    div.classList.add("horario-item");
-
-    const [ano, mes, dia] = h.data.split("-");
-    const dataFormatada = `${dia}/${mes}/${ano}`;
-
-    div.innerHTML = `<strong>${dataFormatada}</strong> - ${h.hora} 🟢`;
-
-    // CLICK PRA PREENCHER
-    div.addEventListener("click", () => {
-      document.querySelector("input[type='date']").value = h.data;
-      document.querySelector("input[type='time']").value = h.hora;
-    });
-
-    container.appendChild(div);
-  });
-}
 </script>
 
 </body>

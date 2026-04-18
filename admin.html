@@ -9,85 +9,128 @@
 
   <title>Painel Admin</title>
 
-  <!-- CSS -->
   <link rel="stylesheet" href="admin.css">
 </head>
 <body>
 
-  <main class="container">
+<main class="container">
 
-    <!-- 🔐 LOGIN -->
-    <section id="login" class="card">
-      <h2>🔐 Login Admin</h2>
+  <!-- 🔐 LOGIN -->
+  <section id="login" class="card">
+    <h2>🔐 Login Admin</h2>
 
-      <div class="form-group">
-        <input type="email" id="email" placeholder="Email">
+    <div class="form-group">
+      <input type="email" id="email" placeholder="Email">
+    </div>
+
+    <div class="form-group">
+      <input type="password" id="senha" placeholder="Senha">
+    </div>
+
+    <button class="btn" onclick="login()">Entrar</button>
+
+    <p id="msgLogin" class="msg"></p>
+  </section>
+
+  <!-- 💈 PAINEL -->
+  <section id="painel" class="hidden">
+
+    <!-- TOPO -->
+    <div class="header admin-topo">
+      <div>
+        <span class="eyebrow">Realtime Database</span>
+        <h1>Painel da Barbearia</h1>
       </div>
+      <button class="btn logout" onclick="logout()">Sair</button>
+    </div>
 
-      <div class="form-group">
-        <input type="password" id="senha" placeholder="Senha">
+    <div class="resumo-grid">
+      <div class="resumo-card">
+        <span>Total</span>
+        <strong id="totalHorarios">0</strong>
       </div>
-
-      <button class="btn" onclick="login()">Entrar</button>
-
-      <p id="msgLogin" class="msg"></p>
-    </section>
-
-    <!-- 💈 PAINEL -->
-    <section id="painel" class="hidden">
-
-      <!-- TOPO -->
-      <div class="header">
-        <h1>Painel da barbearia</h1>
-        <button class="btn logout" onclick="logout()">Sair</button>
+      <div class="resumo-card livre-card">
+        <span>Vagas</span>
+        <strong id="totalLivres">0</strong>
       </div>
+      <div class="resumo-card ocupado-card">
+        <span>Marcados</span>
+        <strong id="totalOcupados">0</strong>
+      </div>
+    </div>
 
-      <!-- ➕ AGENDAR CLIENTE -->
-      <div class="card">
-        <h3>📋 Agendar cliente</h3>
+    <div class="admin-layout">
+      <!-- ADICIONAR -->
+      <div class="card form-card">
+        <h3>Novo horário</h3>
+        <p class="card-text">Cadastre uma vaga livre ou um cliente já marcado.</p>
 
-        <div class="form-group">
-          <input type="text" id="nome" placeholder="Nome do cliente">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Data</label>
+            <input type="date" id="data">
+          </div>
+
+          <div class="form-group">
+            <label>Hora</label>
+            <input type="time" id="hora">
+          </div>
         </div>
 
         <div class="form-group">
-          <input type="tel" id="telefone" placeholder="Telefone">
-        </div>
-
-        <div class="form-group">
-          <select id="servico">
-            <option value="">Escolha o serviço</option>
-            <option>Corte</option>
-            <option>Barba</option>
-            <option>Corte + Barba</option>
-            <option>Sobrancelha</option>
+          <label>Status</label>
+          <select id="statusHorario">
+            <option value="ocupado">Cliente marcado</option>
+            <option value="livre">Vaga livre</option>
           </select>
         </div>
 
-        <div class="form-group">
-          <input type="date" id="data">
+        <div id="dadosCliente">
+          <div class="form-group">
+            <label>Nome do cliente</label>
+            <input type="text" id="nome" placeholder="Nome do cliente">
+          </div>
+
+          <div class="form-group">
+            <label>Telefone</label>
+            <input type="tel" id="telefone" placeholder="Telefone do cliente">
+          </div>
+
+          <div class="form-group">
+            <label>Serviço</label>
+            <select id="servico">
+              <option value="">Escolha o serviço</option>
+              <option>Corte</option>
+              <option>Barba</option>
+              <option>Corte + Barba</option>
+              <option>Sobrancelha</option>
+            </select>
+          </div>
         </div>
 
-        <div class="form-group">
-          <input type="time" id="hora">
-        </div>
-
-        <button class="btn" onclick="adicionarHorario()">Agendar</button>
+        <button class="btn" onclick="adicionarHorario()">Salvar horário</button>
 
         <p id="msgAdmin" class="msg"></p>
       </div>
 
-      <!-- 📅 LISTA -->
-      <div class="lista-box">
-        <h3>📅 Agendamentos</h3>
+      <!-- LISTA -->
+      <div class="lista-box card">
+        <div class="lista-header">
+          <div>
+            <h3>Horários cadastrados</h3>
+            <p class="card-text">Filtre por data, nome ou serviço.</p>
+          </div>
+          <input type="search" id="filtroHorarios" placeholder="Buscar">
+        </div>
         <ul id="lista"></ul>
       </div>
+    </div>
 
-    </section>
+  </section>
 
-  </main>
+</main>
 
-  <script type="module" src="admin.js"></script>
+<script type="module" src="admin.js"></script>
 
 </body>
 </html>
