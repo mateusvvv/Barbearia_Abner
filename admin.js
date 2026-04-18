@@ -24,6 +24,7 @@ const statusHorario = document.getElementById("statusHorario");
 const dadosCliente = document.getElementById("dadosCliente");
 const filtroHorarios = document.getElementById("filtroHorarios");
 let horariosCadastrados = [];
+let cancelarListenerHorarios = null;
 
 function atualizarCamposCliente() {
   const clienteMarcado = statusHorario.value === "ocupado";
@@ -85,6 +86,11 @@ onAuthStateChanged(auth, (user) => {
   } else {
     login.classList.remove("hidden");
     painel.classList.add("hidden");
+
+    if (cancelarListenerHorarios) {
+      cancelarListenerHorarios();
+      cancelarListenerHorarios = null;
+    }
   }
 });
 
@@ -163,7 +169,9 @@ window.adicionarHorario = async function () {
 
 // 📡 LISTAR HORÁRIOS
 function carregarHorarios() {
-  onValue(ref(db, "horarios"), (snapshot) => {
+  if (cancelarListenerHorarios) return;
+
+  cancelarListenerHorarios = onValue(ref(db, "horarios"), (snapshot) => {
     if (!snapshot.exists()) {
       horariosCadastrados = [];
       atualizarResumo(horariosCadastrados);

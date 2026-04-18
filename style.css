@@ -40,7 +40,7 @@ header {
   display: inline-flex;
   flex-direction: column;
   font-family: 'Cinzel', serif;
-  justify-self: start;
+  justify-self: center;
   line-height: 1;
   text-align: center;
   text-decoration: none;
@@ -458,24 +458,15 @@ footer {
     line-height: 1;
   }
 
-  nav a[href="admin.html"] {
-    background: #d4af37;
-    color: #090909;
-    font-weight: 800;
-  }
-
-  nav a[href="admin.html"]::after {
-    color: #090909;
-  }
-
   .menu-mobile {
     display: inline-flex;
     justify-self: end;
   }
 
   .logo {
-    align-items: flex-start;
-    justify-self: start;
+    align-items: center;
+    justify-self: center;
+    margin-left: 46px;
   }
 
   .logo span {
