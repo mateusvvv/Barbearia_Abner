@@ -28,6 +28,7 @@
     </div>
 
     <button class="btn" onclick="login()">Entrar</button>
+    <button class="btn btn-secundario" style="margin-top: 10px;" onclick="window.location.href='index.html'">Voltar ao Site</button>
 
     <p id="msgLogin" class="msg"></p>
   </section>
@@ -41,7 +42,10 @@
         <span class="eyebrow">Realtime Database</span>
         <h1>Painel da Barbearia</h1>
       </div>
-      <button class="btn logout" onclick="logout()">Sair</button>
+      <div class="header-acoes">
+        <button class="btn btn-voltar-topo" onclick="window.location.href='index.html'">Voltar ao Site</button>
+        <button class="btn logout" onclick="logout()">Sair do Painel</button>
+      </div>
     </div>
 
     <div class="resumo-grid">
