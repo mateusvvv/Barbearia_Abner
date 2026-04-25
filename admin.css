@@ -4,6 +4,10 @@
   padding: 0;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   min-height: 100vh;
   background:
@@ -40,7 +44,11 @@ select {
 
 #login {
   max-width: 430px;
-  margin: 20vh auto;
+  margin: 15vh auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
 .admin-topo {
@@ -419,8 +427,8 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 
 .btn-delete:hover {
-  background: #b91c1c !important;
-  color: #fff !important;
+  background: #dc2626 !important;
+  color: white !important;
 }
 
 .btn-secundario {

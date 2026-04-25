@@ -6,7 +6,7 @@
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 90px; /* Impede que o header cubra o título da seção ao clicar no botão */
+  scroll-padding-top: 110px; /* Espaço extra para o título respirar */
 }
 
 body {
@@ -171,7 +171,7 @@ button {
 }
 
 .agendamento {
-  padding: 72px 20px 88px;
+  padding: 140px 20px 88px;
   text-align: center;
 }
 
@@ -589,7 +589,7 @@ footer {
   }
 
   .agendamento {
-    padding: 46px 10px 70px;
+    padding: 100px 10px 70px;
   }
 
   .calendario-box,
