@@ -41,6 +41,8 @@ const btnGerarLote = document.getElementById("btnGerarLote");
 const btnLimparLote = document.getElementById("btnLimparLote");
 const previewLote = document.getElementById("previewLote");
 const adminCalendarioDias = document.getElementById("adminCalendarioDias");
+const btnToggleCalendario = document.getElementById("btnToggleCalendario");
+const calendarioContainer = document.getElementById("calendarioContainer");
 const adminMesAtual = document.getElementById("adminMesAtual");
 const adminMesAnterior = document.getElementById("adminMesAnterior");
 const adminProximoMes = document.getElementById("adminProximoMes");
@@ -111,6 +113,13 @@ btnLimparLote?.addEventListener("click", () => {
   el?.addEventListener("input", atualizarPreviewLote);
 });
 
+btnToggleCalendario?.addEventListener("click", () => {
+  const estaEscondido = calendarioContainer.classList.toggle("hidden");
+  btnToggleCalendario.textContent = estaEscondido 
+    ? "📅 Abrir Calendário" 
+    : "📅 Fechar Calendário";
+});
+
 atualizarPreviewLote();
 atualizarCamposCliente();
 
@@ -177,8 +186,8 @@ function atualizarPassoHora() {
 
   inputHora.disabled = !temData;
   textoHora.textContent = temData
-    ? "Agora escolha a hora para essa data"
-    : "Escolha uma data primeiro";
+    ? "Agora selecione o horário"
+    : "Selecione uma data primeiro";
   dataEscolhida.textContent = temData
     ? `Data selecionada: ${formatarData(dataAtivaAdmin)}`
     : "Nenhuma data selecionada.";
@@ -226,6 +235,12 @@ function selecionarDataAdmin(data) {
   atualizarPassoHora();
   renderizarCalendarioAdmin();
   renderizarHorarios(horariosCadastrados);
+
+  // Fecha o calendário no mobile após escolher para ganhar espaço
+  if (window.innerWidth < 768) {
+    calendarioContainer?.classList.add("hidden");
+    if (btnToggleCalendario) btnToggleCalendario.textContent = "📅 Abrir Calendário";
+  }
 }
 
 function renderizarCalendarioAdmin() {

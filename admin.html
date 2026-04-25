@@ -71,10 +71,10 @@
 
         <div class="admin-agenda">
           <div class="form-group">
-            <label>Escolha a data</label>
+            <button type="button" class="btn btn-secundario" id="btnToggleCalendario" style="margin-top: 5px; margin-bottom: 10px;">📅 Abrir Calendário</button>
             <input type="date" id="data" hidden>
 
-            <div class="admin-calendario">
+            <div class="admin-calendario hidden" id="calendarioContainer">
               <div class="calendario-topo">
                 <button type="button" id="adminMesAnterior" class="btn-calendario">‹</button>
                 <strong id="adminMesAtual">Carregando</strong>
@@ -120,16 +120,19 @@
           </div>
 
           <div class="form-group">
-            <label>Depois escolha a hora</label>
+            <label>📅 Selecione a data</label>
             <div class="date-time-field">
-              <input type="time" id="hora" disabled>
+              <div class="time-input-wrapper">
+                <span class="icon-clock">🕒</span>
+                <input type="time" id="hora" disabled>
+              </div>
               <span id="textoHora">Escolha uma data primeiro</span>
             </div>
             <p id="dataEscolhida" class="data-escolhida">Nenhuma data selecionada.</p>
           </div>
 
           <div class="form-group">
-            <label>Várias vagas livres</label>
+            <label>⏰ Selecione Horários</label>
             <div class="gerador-horarios">
               <input type="time" id="horaInicio" aria-label="Hora inicial">
               <input type="time" id="horaFim" aria-label="Hora final">

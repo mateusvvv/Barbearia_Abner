@@ -366,6 +366,7 @@ input[type="time"] {
   color: #090909;
   color-scheme: light;
   font-weight: 800;
+  text-align: center;
   min-height: 42px;
   padding: 8px 0 2px;
 }
@@ -387,9 +388,27 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   background: #f8fafc;
   border: 2px solid rgba(212, 175, 55, 0.75);
   border-radius: 8px;
-  display: grid;
-  gap: 2px;
-  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+  padding: 12px;
+}
+
+.time-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.time-input-wrapper input[type="time"] {
+  width: auto;
+  min-width: 110px;
+}
+
+.icon-clock {
+  font-size: 22px;
 }
 
 .date-time-field:focus-within {
@@ -661,7 +680,7 @@ li button {
 
 @media (max-width: 460px) {
   .container {
-    padding: 10px;
+    padding: 8px;
   }
 
   .card {
@@ -714,7 +733,7 @@ li button {
   }
 
   .date-time-field {
-    min-height: 76px;
+    min-height: auto;
     padding: 12px 14px;
   }
 
