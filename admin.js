@@ -25,8 +25,20 @@ const dadosCliente = document.getElementById("dadosCliente");
 const filtroHorarios = document.getElementById("filtroHorarios");
 const inputData = document.getElementById("data");
 const inputHora = document.getElementById("hora");
+const horariosLote = document.getElementById("horariosLote");
+const horaInicio = document.getElementById("horaInicio");
+const horaFim = document.getElementById("horaFim");
+const intervaloHorarios = document.getElementById("intervaloHorarios");
+const barbeiro = document.getElementById("barbeiro"); // Novo elemento
 const textoHora = document.getElementById("textoHora");
 const dataEscolhida = document.getElementById("dataEscolhida");
+const resumoFiltroLista = document.getElementById("resumoFiltroLista");
+const botoesFiltroStatus = document.querySelectorAll("[data-filtro-status]");
+const btnSalvarHorario = document.getElementById("btnSalvarHorario");
+const btnCancelarEdicao = document.getElementById("btnCancelarEdicao");
+const btnGerarLote = document.getElementById("btnGerarLote");
+const btnLimparLote = document.getElementById("btnLimparLote");
+const previewLote = document.getElementById("previewLote");
 const adminCalendarioDias = document.getElementById("adminCalendarioDias");
 const adminMesAtual = document.getElementById("adminMesAtual");
 const adminMesAnterior = document.getElementById("adminMesAnterior");
@@ -35,19 +47,79 @@ let horariosCadastrados = [];
 let cancelarListenerHorarios = null;
 let dataAtivaAdmin = "";
 let mesVisivelAdmin = new Date();
+let filtroStatusAtual = "todos";
+let timerMensagemAdmin = null;
+let horarioEditandoId = null;
 
 function atualizarCamposCliente() {
-  const clienteMarcado = statusHorario.value === "ocupado";
+  const statusOcupado = statusHorario.value === "ocupado";
+  const statusLivre = statusHorario.value === "livre";
 
-  dadosCliente.classList.toggle("hidden", !clienteMarcado);
-  document.getElementById("nome").disabled = !clienteMarcado;
-  document.getElementById("telefone").disabled = !clienteMarcado;
-  document.getElementById("servico").disabled = !clienteMarcado;
+  // Campos de dados do cliente (nome, telefone, serviço)
+  dadosCliente.classList.toggle("hidden", !statusOcupado);
+  document.getElementById("nome").disabled = !statusOcupado;
+  document.getElementById("telefone").disabled = !statusOcupado;
+  document.getElementById("servico").disabled = !statusOcupado;
+
+  // Campos de geração em lote
+  horariosLote.disabled = statusOcupado;
+  horaInicio.disabled = statusOcupado;
+  horaFim.disabled = statusOcupado;
+  intervaloHorarios.disabled = statusOcupado;
+
+  if (statusOcupado) {
+    horariosLote.value = "";
+  }
+  atualizarPreviewLote();
 }
 
 statusHorario.addEventListener("change", atualizarCamposCliente);
 filtroHorarios.addEventListener("input", () => renderizarHorarios(horariosCadastrados));
+
+function atualizarPreviewLote() {
+  const horarios = obterHorariosEmLote();
+  if (!horarios.length) {
+    previewLote.textContent = statusHorario.value === "ocupado"
+      ? "Troque para vaga livre para gerar horários em lote."
+      : "Os horários gerados aparecerão aqui.";
+    return;
+  }
+
+  previewLote.textContent = `Horários prontos (${horarios.length}): ${horarios.join(", ")}`;
+}
+
+btnGerarLote?.addEventListener("click", () => {
+  const gerados = gerarHorariosPorIntervalo();
+
+  if (!gerados.length) {
+    mostrarMensagemAdmin("⚠️ Preencha início, fim e intervalo válidos.", "orange");
+    return;
+  }
+
+  horariosLote.value = gerados.join(", ");
+  atualizarPreviewLote();
+});
+
+btnLimparLote?.addEventListener("click", () => {
+  horariosLote.value = "";
+  atualizarPreviewLote();
+});
+
+[horaInicio, horaFim, intervaloHorarios, horariosLote].forEach((el) => {
+  el?.addEventListener("input", atualizarPreviewLote);
+});
+
+atualizarPreviewLote();
 atualizarCamposCliente();
+
+botoesFiltroStatus.forEach((botao) => {
+  botao.addEventListener("click", () => {
+    filtroStatusAtual = botao.dataset.filtroStatus;
+    botoesFiltroStatus.forEach((item) => item.classList.remove("ativo"));
+    botao.classList.add("ativo");
+    renderizarHorarios(horariosCadastrados);
+  });
+});
 
 function formatarData(data) {
   const [ano, mes, dia] = data.split("-");
@@ -76,7 +148,9 @@ function obterStatusDia(data) {
   if (livres > 0) {
     return {
       classe: "vagas",
-      texto: `${livres} vaga${livres > 1 ? "s" : ""}`
+      texto: ocupados > 0
+        ? `${livres} vaga${livres > 1 ? "s" : ""} / ${ocupados} marc.`
+        : `${livres} vaga${livres > 1 ? "s" : ""}`
     };
   }
 
@@ -98,6 +172,40 @@ function atualizarPassoHora() {
     : "Nenhuma data selecionada.";
 }
 
+function mostrarMensagemAdmin(texto, cor) {
+  msgAdmin.innerHTML = texto;
+  msgAdmin.style.color = cor;
+
+  clearTimeout(timerMensagemAdmin);
+  timerMensagemAdmin = setTimeout(() => {
+    msgAdmin.innerHTML = "";
+  }, 3500);
+}
+
+function limparFormularioAdmin(manterData = true) {
+  if (!manterData) {
+    inputData.value = "";
+    dataAtivaAdmin = "";
+  }
+
+  inputHora.value = "";
+  horariosLote.value = "";
+  horaInicio.value = "";
+  horaFim.value = "";
+  document.getElementById("nome").value = "";
+  document.getElementById("telefone").value = "";
+  document.getElementById("servico").value = "";
+  if (barbeiro) barbeiro.value = "";
+  statusHorario.value = "ocupado";
+  horarioEditandoId = null;
+  btnSalvarHorario.textContent = "Salvar horário";
+  btnCancelarEdicao.classList.add("hidden");
+  atualizarCamposCliente();
+  atualizarPassoHora();
+  renderizarCalendarioAdmin();
+  atualizarPreviewLote();
+}
+
 function selecionarDataAdmin(data) {
   dataAtivaAdmin = data;
   inputData.value = data;
@@ -105,6 +213,7 @@ function selecionarDataAdmin(data) {
   inputHora.focus();
   atualizarPassoHora();
   renderizarCalendarioAdmin();
+  renderizarHorarios(horariosCadastrados);
 }
 
 function renderizarCalendarioAdmin() {
@@ -196,14 +305,34 @@ window.login = async function () {
 
 
 // 👁 CONTROLE DE LOGIN
-onAuthStateChanged(auth, (user) => {
+async function limparVagasLivresPassadas() {
+  const hoje = formatarChaveData(new Date());
+  const snapshot = await get(ref(db, "horarios"));
+
+  if (!snapshot.exists()) return;
+
+  snapshot.forEach((child) => {
+    const horario = child.val();
+
+    if (horario.status === "livre" && horario.data < hoje) {
+      remove(ref(db, "horarios/" + child.key));
+    }
+  });
+}
+
+onAuthStateChanged(auth, async (user) => {
   const login = document.getElementById("login");
   const painel = document.getElementById("painel");
 
   if (user) {
-    login.classList.add("hidden");
-    painel.classList.remove("hidden");
-    carregarHorarios();
+    try {
+      login.classList.add("hidden");
+      painel.classList.remove("hidden");
+      await limparVagasLivresPassadas();
+      carregarHorarios();
+    } catch (error) {
+      console.error("Erro ao inicializar painel:", error);
+    }
   } else {
     login.classList.remove("hidden");
     painel.classList.add("hidden");
@@ -220,41 +349,64 @@ onAuthStateChanged(auth, (user) => {
 window.adicionarHorario = async function () {
   const data = inputData.value;
   const hora = inputHora.value;
+  let horasEmLote = obterHorariosEmLote();
   const nome = document.getElementById("nome").value.trim();
   const telefone = document.getElementById("telefone").value.trim();
   const servico = document.getElementById("servico").value;
   const status = statusHorario.value;
+  const barbeiroSelecionado = barbeiro.value;
 
-  if (!data || !hora) {
-    msgAdmin.innerHTML = "⚠️ Preencha data e hora!";
-    msgAdmin.style.color = "orange";
+  if (horarioEditandoId && horasEmLote.length > 0) {
+    mostrarMensagemAdmin("⚠️ Na edição, altere apenas um horário por vez.", "orange");
+    return;
+  }
+
+  if (!barbeiroSelecionado) {
+    mostrarMensagemAdmin("⚠️ Selecione o barbeiro responsável!", "orange");
+    return;
+  }
+
+  if (status === "livre" && hora && horasEmLote.length > 0) {
+    horasEmLote = [...new Set([hora, ...horasEmLote])].sort();
+  }
+
+  if (!data || (!hora && horasEmLote.length === 0)) {
+    mostrarMensagemAdmin("⚠️ Escolha a data e informe o horário!", "orange");
     return;
   }
 
   if (status === "ocupado" && (!nome || !telefone || !servico)) {
-    msgAdmin.innerHTML = "⚠️ Preencha todos os dados do cliente!";
-    msgAdmin.style.color = "orange";
+    mostrarMensagemAdmin("⚠️ Preencha todos os dados do cliente e selecione o barbeiro!", "orange");
     return;
   }
 
   const snapshot = await get(ref(db, "horarios"));
-  let horarioExistente = null;
+  const horariosExistentes = [];
 
   if (snapshot.exists()) {
     snapshot.forEach((child) => {
       const h = child.val();
-      if (h.data === data && h.hora === hora) {
-        horarioExistente = {
-          id: child.key,
-          ...h
-        };
-      }
+      horariosExistentes.push({
+        id: child.key,
+        ...h
+      });
     });
   }
 
+  if (horasEmLote.length > 0) { // Se for lote, chama a função específica
+    await adicionarHorariosEmLote(data, horasEmLote, horariosExistentes);
+    return;
+  }
+
+  const horarioExistente = horariosExistentes.find(h => h.data === data && h.hora === hora && h.id !== horarioEditandoId);
+
+  if (horarioEditandoId && horarioExistente) {
+    mostrarMensagemAdmin("❌ Já existe outro cadastro nessa data e hora.", "red");
+    return;
+  }
+
   if (horarioExistente && horarioExistente.status === "ocupado") {
-    msgAdmin.innerHTML = "❌ Esse horário já está marcado!";
-    msgAdmin.style.color = "red";
+    mostrarMensagemAdmin("❌ Esse horário já está marcado!", "red");
     return;
   }
 
@@ -264,31 +416,123 @@ window.adicionarHorario = async function () {
     nome: status === "ocupado" ? nome : null,
     telefone: status === "ocupado" ? telefone : null,
     servico: status === "ocupado" ? servico : null,
-    status
+    status,
+    barber: barbeiroSelecionado // Adiciona o barbeiro
   };
 
-  if (horarioExistente) {
+  if (horarioEditandoId) {
+    await update(ref(db, "horarios/" + horarioEditandoId), dadosCliente);
+  } else if (horarioExistente) {
     await update(ref(db, "horarios/" + horarioExistente.id), dadosCliente);
   } else {
-    await push(ref(db, "horarios"), dadosCliente);
+    await push(ref(db, "horarios"), {
+      ...dadosCliente,
+      lembreteEnviado: false
+    });
   }
 
-  inputData.value = "";
+  const editouHorario = Boolean(horarioEditandoId);
+  limparFormularioAdmin(true);
+
+  mostrarMensagemAdmin(
+    editouHorario
+      ? "✅ Horário atualizado!"
+      : status === "ocupado" ? "✅ Cliente adicionado!" : "✅ Vaga livre adicionada!",
+    "lightgreen"
+  );
+};
+
+function obterHorariosEmLote() {
+  const digitados = horariosLote.value.match(/\b\d{1,2}:\d{2}\b/g) || [];
+  const gerados = gerarHorariosPorIntervalo();
+  const encontrados = [...digitados, ...gerados];
+  const normalizados = encontrados
+    .map((valor) => {
+      const [hora, minuto] = valor.split(":").map(Number);
+
+      if (hora > 23 || minuto > 59) return null;
+
+      return `${String(hora).padStart(2, "0")}:${String(minuto).padStart(2, "0")}`;
+    })
+    .filter(Boolean);
+
+  return [...new Set(normalizados)].sort();
+}
+
+function converterHoraParaMinutos(hora) {
+  const [horas, minutos] = hora.split(":").map(Number);
+  return horas * 60 + minutos;
+}
+
+function converterMinutosParaHora(totalMinutos) {
+  const horas = Math.floor(totalMinutos / 60);
+  const minutos = totalMinutos % 60;
+  return `${String(horas).padStart(2, "0")}:${String(minutos).padStart(2, "0")}`;
+}
+
+function gerarHorariosPorIntervalo() {
+  if (!horaInicio.value || !horaFim.value) return [];
+
+  const inicio = converterHoraParaMinutos(horaInicio.value);
+  const fim = converterHoraParaMinutos(horaFim.value);
+  const intervalo = Number(intervaloHorarios.value);
+
+  if (fim <= inicio || intervalo <= 0) return [];
+
+  const horarios = [];
+
+  for (let minuto = inicio; minuto <= fim; minuto += intervalo) {
+    horarios.push(converterMinutosParaHora(minuto));
+  }
+
+  return horarios;
+}
+
+async function adicionarHorariosEmLote(data, horas, horariosExistentes) {
+  const existentesDoDia = horariosExistentes.filter(h => h.data === data);
+  let criados = 0;
+  let ignorados = 0;
+  let ocupados = 0;
+
+  for (const hora of horas) {
+    const horarioExistente = existentesDoDia.find(h => h.hora === hora);
+
+    if (horarioExistente?.status === "ocupado") {
+      ocupados++;
+      continue;
+    }
+
+    if (horarioExistente) {
+      ignorados++;
+      continue;
+    }
+
+    await push(ref(db, "horarios"), {
+      data,
+      hora,
+      nome: null,
+      telefone: null,
+      servico: null,
+      status: "livre",
+      barber: barbeiro.value, // Atribui o barbeiro selecionado no form principal
+      lembreteEnviado: false
+    });
+
+    criados++;
+  }
+
   inputHora.value = "";
-  dataAtivaAdmin = "";
-  document.getElementById("nome").value = "";
-  document.getElementById("telefone").value = "";
-  document.getElementById("servico").value = "";
-  statusHorario.value = "ocupado";
-  atualizarCamposCliente();
+  horariosLote.value = "";
+  horaInicio.value = "";
+  horaFim.value = "";
   atualizarPassoHora();
   renderizarCalendarioAdmin();
 
-  msgAdmin.innerHTML = status === "ocupado"
-    ? "✅ Cliente adicionado!"
-    : "✅ Vaga livre adicionada!";
-  msgAdmin.style.color = "lightgreen";
-};
+  mostrarMensagemAdmin(
+    `✅ ${criados} vaga${criados === 1 ? "" : "s"} adicionada${criados === 1 ? "" : "s"}. ${ignorados + ocupados} repetida${ignorados + ocupados === 1 ? "" : "s"} ignorada${ignorados + ocupados === 1 ? "" : "s"}.`,
+    "lightgreen"
+  );
+}
 
 
 // 📡 LISTAR HORÁRIOS
@@ -330,11 +574,17 @@ function renderizarHorarios(dados) {
   const lista = document.getElementById("lista");
   const termo = filtroHorarios.value.trim().toLowerCase();
   const filtrados = dados.filter((h) => {
+    if (dataAtivaAdmin && h.data !== dataAtivaAdmin) return false;
+    if (filtroStatusAtual !== "todos" && h.status !== filtroStatusAtual) return false;
+
     const texto = `${h.data} ${h.hora} ${h.nome || ""} ${h.servico || ""} ${h.telefone || ""}`.toLowerCase();
     return texto.includes(termo);
   });
 
   lista.innerHTML = "";
+  resumoFiltroLista.textContent = dataAtivaAdmin
+    ? `Mostrando ${formatarData(dataAtivaAdmin)}.`
+    : "Filtre por data, nome ou serviço.";
 
   if (filtrados.length === 0) {
     lista.innerHTML = "<p class=\"empty-state\">Nenhum horário encontrado.</p>";
@@ -346,13 +596,14 @@ function renderizarHorarios(dados) {
     const status = h.status === "livre"
       ? "Livre"
       : "Marcado";
+    const barbeiroNome = h.barber ? `com ${h.barber}` : '';
 
     lista.innerHTML += `
       <li class="${h.status}">
         <div class="item-info">
           <span class="status-pill">${status}</span>
           <strong>${dataFormatada} - ${h.hora}</strong>
-
+          ${h.barber ? `<span>Barbeiro: ${h.barber}</span>` : ''}
           ${h.nome ? `<span>${h.nome}</span>` : "<span>Vaga aberta para cliente</span>"}
           ${h.telefone ? `<small>${h.telefone}</small>` : ""}
           ${h.servico ? `<small>${h.servico}</small>` : ""}
@@ -365,6 +616,7 @@ function renderizarHorarios(dados) {
               : ""
           }
 
+          <button class="btn-editar" onclick="editarHorario('${h.id}')">Editar</button>
           <button class="btn-delete" onclick="excluir('${h.id}')">Excluir</button>
         </div>
       </li>
@@ -375,6 +627,10 @@ function renderizarHorarios(dados) {
 
 // ❌ CANCELAR
 window.cancelar = function (id) {
+  if (!confirm("Liberar esse horário e apagar os dados do cliente?")) {
+    return;
+  }
+
   update(ref(db, "horarios/" + id), {
     status: "livre",
     nome: null,
@@ -382,8 +638,50 @@ window.cancelar = function (id) {
     servico: null
   });
 
-  msgAdmin.innerHTML = "✅ Horário liberado!";
-  msgAdmin.style.color = "lightgreen";
+  mostrarMensagemAdmin("✅ Horário liberado!", "lightgreen");
+};
+
+
+// ✏️ EDITAR
+window.editarHorario = function (id) {
+  const horario = horariosCadastrados.find(h => h.id === id);
+
+  if (!horario) {
+    mostrarMensagemAdmin("⚠️ Horário não encontrado.", "orange");
+    return;
+  }
+
+  horarioEditandoId = id;
+  dataAtivaAdmin = horario.data;
+  inputData.value = horario.data;
+  inputHora.value = horario.hora;
+  statusHorario.value = horario.status;
+  document.getElementById("nome").value = horario.nome || "";
+  document.getElementById("telefone").value = horario.telefone || "";
+  document.getElementById("servico").value = horario.servico || "";
+  barbeiro.value = horario.barber || ""; // Preenche o barbeiro
+
+  const [ano, mes] = horario.data.split("-");
+  mesVisivelAdmin = new Date(Number(ano), Number(mes) - 1, 1);
+
+  horariosLote.value = "";
+  horaInicio.value = "";
+  horaFim.value = "";
+  btnSalvarHorario.textContent = "Salvar alterações";
+  btnCancelarEdicao.classList.remove("hidden");
+  atualizarCamposCliente();
+  atualizarPassoHora();
+  renderizarCalendarioAdmin();
+  renderizarHorarios(horariosCadastrados);
+
+  document.querySelector(".form-card").scrollIntoView({ behavior: "smooth", block: "start" });
+  mostrarMensagemAdmin("Editando horário selecionado.", "#f1c94d");
+};
+
+window.cancelarEdicao = function () {
+  limparFormularioAdmin(true);
+  renderizarHorarios(horariosCadastrados);
+  mostrarMensagemAdmin("Edição cancelada.", "orange");
 };
 
 
@@ -392,8 +690,7 @@ window.excluir = function (id) {
   if (confirm("Excluir horário?")) {
     remove(ref(db, "horarios/" + id));
 
-    msgAdmin.innerHTML = "🗑️ Horário excluído!";
-    msgAdmin.style.color = "orange";
+    mostrarMensagemAdmin("🗑️ Horário excluído!", "orange");
   }
 };
 
@@ -401,4 +698,15 @@ window.excluir = function (id) {
 // 🚪 LOGOUT
 window.logout = function () {
   signOut(auth);
+};
+
+// 🗑 EXCLUIR TUDO
+window.excluirTodos = function () {
+  if (confirm("⚠️ ATENÇÃO: Você tem certeza que deseja excluir TODOS os horários cadastrados (livres e marcados)? Esta ação não pode ser desfeita.")) {
+    remove(ref(db, "horarios"))
+      .then(() => {
+        mostrarMensagemAdmin("🗑️ Agenda totalmente limpa!", "orange");
+      })
+      .catch(() => mostrarMensagemAdmin("❌ Falha ao excluir agenda.", "red"));
+  }
 };

@@ -1,7 +1,7 @@
 const wppconnect = require('@wppconnect-team/wppconnect');
 const { db } = require('./firebase');
 
-const { ref, push, get } = require("firebase/database");
+const { ref, push, get, update } = require("firebase/database");
 
 wppconnect.create({
   session: 'barbearia',
@@ -111,7 +111,8 @@ function start(client) {
           nome,
           telefone: numero,
           servico: "Corte",
-          status: "agendado"
+          status: "agendado",
+          lembreteEnviado: false
         });
 
         client.sendText(numero,
@@ -125,4 +126,37 @@ function start(client) {
     }
 
   });
+
+  setInterval(() => enviarLembretesProximos(client).catch(console.error), 60 * 1000);
+  enviarLembretesProximos(client).catch(console.error);
+}
+
+async function enviarLembretesProximos(client) {
+  const now = new Date();
+  const hoje = now.toISOString().slice(0, 10);
+  const snapshot = await get(ref(db, "horarios"));
+  if (!snapshot.exists()) return;
+
+  const tarefas = [];
+  snapshot.forEach((child) => {
+    const h = child.val();
+    const horarioAgendamento = new Date(`${h.data}T${h.hora}:00`);
+    const diff = horarioAgendamento - now;
+
+    if (
+      h.status === "agendado" &&
+      h.telefone &&
+      !h.lembreteEnviado &&
+      h.data === hoje &&
+      diff > 0 &&
+      diff <= 10 * 60000
+    ) {
+      const mensagem = `⏰ Lembrete Barbearia Abner\n\nOlá ${h.nome || "cliente"}, seu horário está em 10 minutos: ${h.data} às ${h.hora}. Chegue com antecedência para cortar seu cabelo!`;
+
+      client.sendText(h.telefone, mensagem);
+      tarefas.push(update(ref(db, "horarios/" + child.key), { lembreteEnviado: true }));
+    }
+  });
+
+  await Promise.all(tarefas);
 }

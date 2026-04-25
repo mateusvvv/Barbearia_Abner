@@ -98,6 +98,23 @@
           </div>
 
           <div class="form-group">
+            <label>Status do Horário</label>
+            <select id="statusHorario">
+              <option value="ocupado">Cliente marcado</option>
+              <option value="livre">Vaga livre</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Barbeiro Responsável</label>
+            <select id="barbeiro">
+              <option value="">Selecione o barbeiro</option>
+              <option value="Isac">Isac</option>
+              <option value="Carlos">Carlos</option>
+            </select>
+          </div>
+
+          <div class="form-group">
             <label>Depois escolha a hora</label>
             <div class="date-time-field">
               <input type="time" id="hora" disabled>
@@ -105,14 +122,28 @@
             </div>
             <p id="dataEscolhida" class="data-escolhida">Nenhuma data selecionada.</p>
           </div>
-        </div>
 
-        <div class="form-group">
-          <label>Status</label>
-          <select id="statusHorario">
-            <option value="ocupado">Cliente marcado</option>
-            <option value="livre">Vaga livre</option>
-          </select>
+          <div class="form-group">
+            <label>Várias vagas livres</label>
+            <div class="gerador-horarios">
+              <input type="time" id="horaInicio" aria-label="Hora inicial">
+              <input type="time" id="horaFim" aria-label="Hora final">
+              <select id="intervaloHorarios" aria-label="Intervalo entre horários">
+                <option value="30">30 min</option>
+                <option value="15">15 min</option>
+                <option value="45">45 min</option>
+                <option value="60">60 min</option>
+              </select>
+            </div>
+            <div class="lote-actions">
+              <button type="button" class="btn btn-secundario" id="btnGerarLote">Gerar horários</button>
+              <button type="button" class="btn btn-secundario" id="btnLimparLote">Limpar lista</button>
+            </div>
+            <small>Preencha início e fim para gerar vagas automaticamente.</small>
+            <textarea id="horariosLote" placeholder="Ex: 09:00, 09:30, 10:00"></textarea>
+            <div id="previewLote" class="preview-lote">Os horários gerados aparecerão aqui.</div>
+            <small>Ou digite horários separados por vírgula.</small>
+          </div>
         </div>
 
         <div id="dadosCliente">
@@ -138,7 +169,8 @@
           </div>
         </div>
 
-        <button class="btn" onclick="adicionarHorario()">Salvar horário</button>
+        <button class="btn" id="btnSalvarHorario" onclick="adicionarHorario()">Salvar horário</button>
+        <button class="btn btn-secundario hidden" id="btnCancelarEdicao" onclick="cancelarEdicao()">Cancelar edição</button>
 
         <p id="msgAdmin" class="msg"></p>
       </div>
@@ -148,10 +180,20 @@
         <div class="lista-header">
           <div>
             <h3>Horários cadastrados</h3>
-            <p class="card-text">Filtre por data, nome ou serviço.</p>
+            <p id="resumoFiltroLista" class="card-text">Filtre por data, nome ou serviço.</p>
           </div>
-          <input type="search" id="filtroHorarios" placeholder="Buscar">
+          <div class="lista-controles">
+            <input type="search" id="filtroHorarios" placeholder="Buscar">
+            <button class="btn btn-delete btn-excluir-tudo" onclick="excluirTodos()">Excluir Tudo</button>
+          </div>
         </div>
+
+        <div class="filtros-rapidos" aria-label="Filtros rápidos">
+          <button type="button" class="ativo" data-filtro-status="todos">Todos</button>
+          <button type="button" data-filtro-status="livre">Livres</button>
+          <button type="button" data-filtro-status="ocupado">Marcados</button>
+        </div>
+
         <ul id="lista"></ul>
       </div>
     </div>

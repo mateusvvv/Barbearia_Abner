@@ -19,23 +19,35 @@ document.addEventListener("DOMContentLoaded", () => {
   // 📅 ELEMENTOS
   const calendario = document.getElementById("calendario");
   const horariosContainer = document.getElementById("horarios");
+  const barbeiroSelecionadoInput = document.getElementById("barbeiroSelecionado"); // Novo input oculto
+  const filtroBarbeiro = document.getElementById("filtroBarbeiro");
+
+  let horariosBrutos = []; // Cache dos dados do Firebase
 
   // 🔥 FIREBASE LISTENER
   if (calendario && horariosContainer) {
     onValue(ref(db, "horarios"), (snapshot) => {
-
       console.log("DADOS FIREBASE:", snapshot.val());
+      horariosBrutos = [];
+      if (snapshot.exists()) {
+        snapshot.forEach((child) => {
+          horariosBrutos.push(child.val());
+        });
+      }
+      renderizarAgenda();
+    });
+  }
 
+  // Função para renderizar com base no filtro
+  function renderizarAgenda() {
+      const barbeiroAtivo = filtroBarbeiro.value;
       calendario.innerHTML = "";
       horariosContainer.innerHTML = "";
 
-      let dados = [];
-
-      if (snapshot.exists()) {
-        snapshot.forEach((child) => {
-          dados.push(child.val());
-        });
-      }
+      // Filtra os dados de acordo com o barbeiro selecionado
+      const dados = horariosBrutos.filter(h => 
+        barbeiroAtivo === "todos" || h.barber === barbeiroAtivo
+      );
 
       const dias = {};
 
@@ -54,9 +66,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const horariosDia = dias[data];
 
-        const ocupados = horariosDia.filter(h => h.status === "agendado");
+        const ocupados = horariosDia.filter(h => h.status === "ocupado");
 
-        diaDiv.classList.add(ocupados.length ? "ocupado" : "livre");
+        diaDiv.classList.add(ocupados.length >= horariosDia.length && horariosDia.length > 0 ? "ocupado" : "livre");
 
         diaDiv.addEventListener("click", () => {
 
@@ -69,8 +81,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         calendario.appendChild(diaDiv);
       });
+  }
 
-    });
+  // Ouvinte para o seletor de filtro
+  if (filtroBarbeiro) {
+    filtroBarbeiro.addEventListener("change", renderizarAgenda);
   }
 
   // ⏰ MOSTRAR HORÁRIOS
@@ -81,15 +96,19 @@ document.addEventListener("DOMContentLoaded", () => {
       const div = document.createElement("div");
       div.classList.add("horario");
 
-      div.classList.add(h.status === "agendado" ? "ocupado" : "livre");
+      div.classList.add(h.status === "ocupado" ? "ocupado" : "livre");
+      
+      // Exibe a hora e o barbeiro
+      div.innerHTML = `${h.hora} ${h.barber ? `<br><small>${h.barber}</small>` : ''}`;
 
-      div.innerText = h.hora;
-
-      if (h.status !== "agendado") {
+      if (h.status !== "ocupado") {
         div.addEventListener("click", () => {
 
           document.querySelectorAll(".horario")
             .forEach(el => el.classList.remove("selecionado"));
+          
+          // Define o barbeiro selecionado no input oculto
+          barbeiroSelecionadoInput.value = h.barber || "";
 
           div.classList.add("selecionado");
 
@@ -119,6 +138,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const data =
         document.getElementById("dataSelecionada").value ||
         form.querySelector("input[type='date']").value;
+      const barbeiro = barbeiroSelecionadoInput.value; // Pega o barbeiro do input oculto
 
       const hora =
         document.getElementById("horaSelecionada").value ||
@@ -126,7 +146,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (!nome || !telefone || !servico || !data || !hora) {
         alert("Preencha todos os campos!");
-        return;
+        return; // Adicionado return para parar a execução
+      }
+
+      if (!barbeiro) {
+        alert("Selecione um horário com um barbeiro disponível!");
+        return; // Adicionado return para parar a execução
       }
 
       try {
@@ -136,7 +161,8 @@ document.addEventListener("DOMContentLoaded", () => {
           servico,
           data,
           hora,
-          status: "agendado"
+          status: "ocupado",
+          barber: barbeiro // Salva o barbeiro junto com o agendamento
         });
 
         console.log("SALVOU 🔥");
@@ -150,6 +176,7 @@ document.addEventListener("DOMContentLoaded", () => {
 📞 Telefone: ${telefone}
 ✂️ Serviço: ${servico}
 📅 Data: ${dataFormatada}
+👨‍🦰 Barbeiro: ${barbeiro}
 ⏰ Hora: ${hora}
 
 ⏳ Status: Aguardando confirmação da barbearia.`;
