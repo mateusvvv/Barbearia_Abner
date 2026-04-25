@@ -6,6 +6,7 @@
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 90px; /* Impede que o header cubra o título da seção ao clicar no botão */
 }
 
 body {
@@ -373,13 +374,13 @@ button {
 
 .grupo-lista {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
 }
 
 .horario {
-  min-height: 82px;
-  padding: 12px;
+  min-height: 64px;
+  padding: 8px;
   border-radius: 8px;
   text-align: center;
   font-size: 14px;
@@ -392,7 +393,7 @@ button {
 }
 
 .horario strong {
-  font-size: 20px;
+  font-size: 18px;
   display: block;
   line-height: 1;
 }
@@ -501,7 +502,7 @@ footer {
   header {
     grid-template-columns: 1fr auto;
     gap: 12px;
-    padding: 10px 14px;
+    padding: 8px 14px; /* Header um pouco mais fino em tablets/celulares */
   }
 
   nav {
@@ -569,7 +570,8 @@ footer {
 
 @media (max-width: 560px) {
   header {
-    min-height: 64px;
+    min-height: 58px;
+    padding: 6px 12px;
   }
 
   .hero {
@@ -620,9 +622,27 @@ footer {
     gap: 12px;
   }
 
-  .grupo-lista,
+  .grupo-lista {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
   .form-agendamento {
     grid-template-columns: 1fr;
+  }
+
+  .horario {
+    min-height: 56px;
+    padding: 6px 4px;
+  }
+
+  .horario strong {
+    font-size: 15px;
+  }
+
+  .barber-tag {
+    font-size: 8px;
+    padding: 2px 6px;
   }
 
   .form-agendamento button {

@@ -97,9 +97,12 @@ document.addEventListener("DOMContentLoaded", () => {
       div.classList.add("horario");
 
       div.classList.add(h.status === "ocupado" ? "ocupado" : "livre");
+      if (h.barber) div.classList.add(h.barber.toLowerCase());
       
       // Exibe a hora e o barbeiro
-      div.innerHTML = `${h.hora} ${h.barber ? `<br><small>${h.barber}</small>` : ''}`;
+      const barberClass = h.barber ? `barber-tag-${h.barber.toLowerCase()}` : "";
+      const labelBarbeiro = h.barber ? `<span class="barber-tag ${barberClass}">Barbeiro: ${h.barber}</span>` : "";
+      div.innerHTML = `<strong>${h.hora}</strong> ${labelBarbeiro}`;
 
       if (h.status !== "ocupado") {
         div.addEventListener("click", () => {

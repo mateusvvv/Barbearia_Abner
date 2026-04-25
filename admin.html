@@ -81,6 +81,7 @@
                 <span><i class="dot vagas"></i> Vagas</span>
                 <span><i class="dot ocupado"></i> Marcado</span>
                 <span><i class="dot sem-agenda"></i> Sem agenda</span>
+                <span><i class="dot passado"></i> Passou</span>
               </div>
 
               <div class="dias-semana">
@@ -180,9 +181,14 @@
         <div class="lista-header">
           <div>
             <h3>Horários cadastrados</h3>
-            <p id="resumoFiltroLista" class="card-text">Filtre por data, nome ou serviço.</p>
+            <p id="resumoFiltroLista" class="card-text">Filtre por data, barbeiro, nome ou serviço.</p>
           </div>
           <div class="lista-controles">
+            <select id="filtroBarbeiroLista" aria-label="Filtrar por barbeiro">
+              <option value="todos">Todos os Barbeiros</option>
+              <option value="Isac">Isac</option>
+              <option value="Carlos">Carlos</option>
+            </select>
             <input type="search" id="filtroHorarios" placeholder="Buscar">
             <button class="btn btn-delete btn-excluir-tudo" onclick="excluirTodos()">Excluir Tudo</button>
           </div>

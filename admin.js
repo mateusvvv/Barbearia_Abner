@@ -23,6 +23,7 @@ const msgAdmin = document.getElementById("msgAdmin");
 const statusHorario = document.getElementById("statusHorario");
 const dadosCliente = document.getElementById("dadosCliente");
 const filtroHorarios = document.getElementById("filtroHorarios");
+const filtroBarbeiroLista = document.getElementById("filtroBarbeiroLista");
 const inputData = document.getElementById("data");
 const inputHora = document.getElementById("hora");
 const horariosLote = document.getElementById("horariosLote");
@@ -75,6 +76,7 @@ function atualizarCamposCliente() {
 
 statusHorario.addEventListener("change", atualizarCamposCliente);
 filtroHorarios.addEventListener("input", () => renderizarHorarios(horariosCadastrados));
+filtroBarbeiroLista?.addEventListener("change", () => renderizarHorarios(horariosCadastrados));
 
 function atualizarPreviewLote() {
   const horarios = obterHorariosEmLote();
@@ -134,6 +136,16 @@ function formatarChaveData(data) {
 }
 
 function obterStatusDia(data) {
+  const hoje = formatarChaveData(new Date());
+
+  if (data < hoje) {
+    return {
+      classe: "passado",
+      texto: "Passou",
+      bloqueado: true
+    };
+  }
+
   const horariosDoDia = horariosCadastrados.filter(h => h.data === data);
   const livres = horariosDoDia.filter(h => h.status === "livre").length;
   const ocupados = horariosDoDia.filter(h => h.status === "ocupado").length;
@@ -246,6 +258,7 @@ function renderizarCalendarioAdmin() {
 
     botao.type = "button";
     botao.className = `dia-calendario ${status.classe}`;
+    botao.disabled = Boolean(status.bloqueado);
 
     if (chave === dataAtivaAdmin) {
       botao.classList.add("selecionado");
@@ -573,9 +586,12 @@ function carregarHorarios() {
 function renderizarHorarios(dados) {
   const lista = document.getElementById("lista");
   const termo = filtroHorarios.value.trim().toLowerCase();
+  const barbeiroFiltro = filtroBarbeiroLista?.value || "todos";
+
   const filtrados = dados.filter((h) => {
     if (dataAtivaAdmin && h.data !== dataAtivaAdmin) return false;
     if (filtroStatusAtual !== "todos" && h.status !== filtroStatusAtual) return false;
+    if (barbeiroFiltro !== "todos" && h.barber !== barbeiroFiltro) return false;
 
     const texto = `${h.data} ${h.hora} ${h.nome || ""} ${h.servico || ""} ${h.telefone || ""}`.toLowerCase();
     return texto.includes(termo);
@@ -584,7 +600,7 @@ function renderizarHorarios(dados) {
   lista.innerHTML = "";
   resumoFiltroLista.textContent = dataAtivaAdmin
     ? `Mostrando ${formatarData(dataAtivaAdmin)}.`
-    : "Filtre por data, nome ou serviço.";
+    : "Filtre por data, barbeiro, nome ou serviço.";
 
   if (filtrados.length === 0) {
     lista.innerHTML = "<p class=\"empty-state\">Nenhum horário encontrado.</p>";
@@ -604,7 +620,7 @@ function renderizarHorarios(dados) {
           <span class="status-pill">${status}</span>
           <strong>${dataFormatada} - ${h.hora}</strong>
           ${h.barber ? `<span>Barbeiro: ${h.barber}</span>` : ''}
-          ${h.nome ? `<span>${h.nome}</span>` : "<span>Vaga aberta para cliente</span>"}
+          ${h.nome ? `<span>Cliente: ${h.nome}</span>` : "<span>Vaga aberta para cliente</span>"}
           ${h.telefone ? `<small>${h.telefone}</small>` : ""}
           ${h.servico ? `<small>${h.servico}</small>` : ""}
         </div>

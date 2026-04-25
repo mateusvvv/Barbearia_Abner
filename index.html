@@ -381,9 +381,11 @@ function renderizarHorariosDoDia() {
     const status = h.status === "ocupado" ? "ocupado" : "livre";
 
     div.classList.add("horario", status);
+    if (h.barber) div.classList.add(h.barber.toLowerCase());
 
     const textoStatus = status === "ocupado" ? "Marcado" : "Livre";
-    const labelBarbeiro = h.barber ? `<span class="barber-tag">Barbeiro: ${h.barber}</span>` : "";
+    const barberClass = h.barber ? `barber-tag-${h.barber.toLowerCase()}` : "";
+    const labelBarbeiro = h.barber ? `<span class="barber-tag ${barberClass}">Barbeiro: ${h.barber}</span>` : "";
 
     div.innerHTML = `
       <strong>${h.hora}</strong>
