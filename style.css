@@ -6,20 +6,21 @@
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 130px; /* Espaço extra para o título respirar */
+  scroll-padding-top: 92px;
 }
 
 body {
-  background: #090909;
+  background: radial-gradient(circle at 50% 10%, #182026 0, #080909 42%, #050505 100%);
   color: #fff;
   font-family: 'Poppins', 'Segoe UI', sans-serif;
   line-height: 1.6;
+  overflow-x: hidden;
 }
 
 .container {
   width: min(1180px, 100%);
   margin: auto;
-  padding: 0 20px;
+  padding: 0 16px;
 }
 
 header {
@@ -30,9 +31,9 @@ header {
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: 18px;
-  padding: 13px 22px;
+  padding: 16px clamp(40px, 9vw, 160px);
   border-bottom: 1px solid rgba(212, 175, 55, 0.28);
-  background: rgba(8, 8, 8, 0.88);
+  background: rgba(5, 7, 8, 0.94);
   backdrop-filter: blur(12px);
 }
 
@@ -41,7 +42,7 @@ header {
   display: inline-flex;
   flex-direction: column;
   font-family: 'Cinzel', serif;
-  justify-self: center;
+  justify-self: start;
   line-height: 1;
   text-align: center;
   text-decoration: none;
@@ -51,17 +52,17 @@ header {
 .logo span {
   color: #f8fafc;
   font-family: 'Poppins', 'Segoe UI', sans-serif;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 700;
-  letter-spacing: 2px;
+  letter-spacing: 5px;
 }
 
 .logo strong {
   background: linear-gradient(45deg, #d4af37, #ffd700);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  font-size: clamp(22px, 4vw, 31px);
-  letter-spacing: 1px;
+  font-size: clamp(36px, 4.4vw, 48px);
+  letter-spacing: 0;
 }
 
 nav {
@@ -89,23 +90,23 @@ nav a:hover {
 
 .menu-mobile {
   display: none;
-  width: 46px;
-  height: 42px;
+  width: 58px;
+  height: 58px;
   align-items: center;
   justify-content: center;
   gap: 5px;
   flex-direction: column;
-  background: #151515;
-  border: 1px solid rgba(212, 175, 55, 0.35);
+  background: transparent;
+  border: 0;
   border-radius: 8px;
   cursor: pointer;
 }
 
 .menu-mobile span {
-  width: 20px;
-  height: 2px;
+  width: 38px;
+  height: 4px;
   border-radius: 999px;
-  background: #d4af37;
+  background: #facc15;
   transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
@@ -123,7 +124,7 @@ nav a:hover {
 
 .hero {
   position: relative;
-  min-height: 88vh;
+  min-height: clamp(520px, 72vh, 680px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -134,25 +135,46 @@ nav a:hover {
 .overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.62), #090909);
+  background:
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.28), rgba(0, 0, 0, 0.72) 58%, #030404 100%),
+    linear-gradient(to right, rgba(0, 0, 0, 0.72), transparent 62%);
 }
 
 .conteudo {
   position: relative;
-  max-width: 760px;
-  padding: 0 20px;
+  width: min(100%, 900px);
+  max-width: none;
+  padding: 0 28px;
   text-align: center;
 }
 
+.conteudo::before {
+  content: "Sua barba, nosso orgulho";
+  display: block;
+  color: #ffd700;
+  font-size: clamp(15px, 1.35vw, 20px);
+  font-weight: 800;
+  letter-spacing: 8px;
+  line-height: 1.25;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+}
+
 .conteudo h1 {
-  font-size: clamp(34px, 8vw, 72px);
-  line-height: 1.02;
+  font-size: clamp(42px, 4.4vw, 64px);
+  line-height: 1.08;
+  max-width: 720px;
+  margin: 0 auto;
 }
 
 .conteudo p {
-  color: #ddd;
-  font-size: 18px;
-  margin: 14px 0 24px;
+  color: #f4f4f5;
+  font-size: clamp(18px, 1.8vw, 24px);
+  line-height: 1.35;
+  margin: 24px 0 0;
+  max-width: 560px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 button {
@@ -166,92 +188,196 @@ button {
 .form-agendamento button {
   min-height: 48px;
   padding: 12px 20px;
-  background: #d4af37;
+  background: linear-gradient(135deg, #ffd84d, #d4af37);
   color: #080808;
+  box-shadow: 0 16px 32px rgba(212, 175, 55, 0.24);
+}
+
+.conteudo a {
+  display: inline-flex;
+  margin-top: 28px;
+  text-decoration: none;
+}
+
+.conteudo button {
+  min-width: 260px;
+  min-height: 56px;
+  padding: 14px 26px;
+  font-size: 16px;
+  text-transform: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.conteudo button:hover {
+  box-shadow: 0 20px 38px rgba(212, 175, 55, 0.32);
+  transform: translateY(-2px);
 }
 
 .agendamento {
-  padding: 200px 20px 88px;
+  margin-top: -2px;
+  padding: 0 0 78px;
   text-align: center;
 }
 
+.agendamento .container {
+  max-width: 920px;
+}
+
 .agendamento h2 {
-  font-size: clamp(22px, 4vw, 32px);
-  opacity: 0.95;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
 .agendamento > .container > p {
-  color: #888;
-  font-size: 14px;
-  margin: 4px auto 24px;
+  display: none;
 }
 
 .filtro-barbeiro-container {
-  max-width: 300px;
-  margin: 0 auto 25px;
+  display: grid;
+  gap: 10px;
+  margin: 0 auto 18px;
+  max-width: 580px;
+  padding: 14px;
+  border: 1px solid rgba(212, 175, 55, 0.18);
+  border-radius: 8px;
+  background: rgba(16, 19, 21, 0.82);
   text-align: left;
 }
 
 .filtro-barbeiro-container label {
   display: block;
-  margin-bottom: 8px;
   font-size: 14px;
+  font-weight: 800;
   color: #d4af37;
+}
+
+#filtroBarbeiro {
+  display: none;
+}
+
+.barbeiro-opcoes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.barbeiro-opcao {
+  min-height: 48px;
+  padding: 12px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: #101315;
+  color: #f8fafc;
+  font-weight: 800;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.barbeiro-opcao:hover,
+.barbeiro-opcao.selecionado {
+  border-color: #d4af37;
+  background: linear-gradient(135deg, #ffd84d, #d4af37);
+  color: #080808;
+  transform: translateY(-1px);
 }
 
 .agenda-layout {
   display: grid;
-  grid-template-columns: minmax(310px, 1fr) minmax(310px, 420px);
-  gap: 18px;
+  grid-template-columns: 1fr;
+  gap: 24px;
   align-items: start;
-  margin-top: 26px;
+  margin-top: 0;
   text-align: left;
 }
 
 .calendario-box,
 .horarios-box,
 .form-agendamento {
-  background: rgba(255, 255, 255, 0.045);
-  border: 1px solid rgba(212, 175, 55, 0.2);
-  border-radius: 8px;
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
+  background:
+    linear-gradient(145deg, rgba(13, 19, 23, 0.94), rgba(4, 7, 9, 0.96)),
+    radial-gradient(circle at 20% 0, rgba(212, 175, 55, 0.12), transparent 30%);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 20px;
+  box-shadow: 0 26px 80px rgba(0, 0, 0, 0.5);
 }
 
 .calendario-box,
 .horarios-box {
-  padding: 18px;
+  padding: 34px;
 }
 
 .calendario-topo {
   display: grid;
-  grid-template-columns: 44px 1fr 44px;
+  grid-template-columns: 58px 1fr 52px 52px;
   align-items: center;
   gap: 10px;
-  margin-bottom: 14px;
-  text-align: center;
+  margin-bottom: 32px;
+  text-align: left;
 }
 
 .calendario-topo strong {
   color: #fff;
-  font-size: 20px;
+  font-size: clamp(28px, 5vw, 38px);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.icone-calendario {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  border: 4px solid #facc15;
+  border-radius: 8px;
+}
+
+.icone-calendario::before,
+.icone-calendario::after {
+  content: "";
+  position: absolute;
+  top: -9px;
+  width: 6px;
+  height: 14px;
+  border-radius: 999px;
+  background: #facc15;
+}
+
+.icone-calendario::before {
+  left: 9px;
+}
+
+.icone-calendario::after {
+  right: 9px;
+}
+
+.icone-calendario {
+  box-shadow: inset 0 11px 0 rgba(250, 204, 21, 0.12);
 }
 
 .btn-calendario {
-  width: 44px;
-  height: 44px;
-  background: #181818;
+  width: 52px;
+  height: 52px;
+  background: transparent;
   color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  font-size: 28px;
+  border: 0;
+  font-size: 48px;
+  font-weight: 300;
 }
 
 .legenda {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  justify-content: space-between;
+  gap: 14px 20px;
   color: #c9c9c9;
-  font-size: 13px;
-  margin-bottom: 14px;
+  font-size: 16px;
+  margin: 28px 0 0;
+  padding: 18px 22px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 14px;
+  background: rgba(12, 18, 22, 0.72);
 }
 
 .legenda span {
@@ -261,85 +387,102 @@ button {
 }
 
 .dot {
-  width: 10px;
-  height: 10px;
+  width: 18px;
+  height: 18px;
   border-radius: 999px;
   display: inline-block;
 }
 
-.dot.vagas {
+.dot.tem-vaga {
   background: #22c55e;
 }
 
+.dot.poucas-vagas {
+  background: #facc15;
+}
+
+.dot.lotado {
+  background: #ff2d2d;
+}
+
 .dot.indisponivel {
-  background: #ef4444;
-}
-
-.dot.sem-agenda {
-  background: #777;
-}
-
-.dot.passado {
-  background: #444;
+  background: #e5e7eb;
 }
 
 .dias-semana,
 .calendario-dias {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
+  gap: 12px;
 }
 
 .dias-semana {
-  color: #aaa;
-  font-size: 12px;
+  color: #b9c0c8;
+  font-size: 20px;
   font-weight: 700;
-  margin-bottom: 8px;
+  margin-bottom: 18px;
   text-align: center;
 }
 
 .dia-vazio {
-  min-height: 82px;
+  min-height: 90px;
 }
 
 .dia-calendario {
-  min-height: 82px;
-  padding: 9px 6px;
-  background: #141414;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  aspect-ratio: 1;
+  min-height: auto;
+  padding: 12px 6px;
+  background: linear-gradient(145deg, #151b20, #0c1114);
+  border: 1px solid rgba(255, 255, 255, 0.045);
+  border-radius: 12px;
   color: #fff;
   display: grid;
-  align-content: space-between;
-  text-align: left;
-  transition: transform 0.2s ease, border 0.2s ease;
+  align-content: center;
+  justify-items: center;
+  gap: 9px;
+  text-align: center;
+  transition: transform 0.2s ease, border 0.2s ease, background 0.2s ease;
 }
 
 .dia-calendario strong {
-  font-size: 18px;
+  font-size: clamp(20px, 4vw, 28px);
+  line-height: 1;
 }
 
 .dia-calendario span {
-  font-size: 11px;
-  color: #c9c9c9;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  box-shadow: 0 0 12px currentColor;
 }
 
-.dia-calendario.vagas {
-  border-left: 4px solid #22c55e;
+.dia-calendario small {
+  display: none;
+}
+
+.dia-calendario.tem-vaga span {
+  background: #22c55e;
+  color: rgba(34, 197, 94, 0.5);
+}
+
+.dia-calendario.poucas-vagas span {
+  background: #facc15;
+  color: rgba(250, 204, 21, 0.5);
+}
+
+.dia-calendario.lotado span {
+  background: #ff2d2d;
+  color: rgba(255, 45, 45, 0.52);
 }
 
 .dia-calendario.indisponivel {
-  border-left: 4px solid #ef4444;
-  opacity: 0.72;
-}
-
-.dia-calendario.sem-agenda {
-  border-left: 4px solid #777;
-}
-
-.dia-calendario.passado {
-  border-left: 4px solid #444;
   cursor: not-allowed;
-  opacity: 0.42;
+  opacity: 0.45;
+}
+
+.dia-calendario.indisponivel span {
+  background: #e5e7eb;
+  color: rgba(229, 231, 235, 0.35);
 }
 
 .dia-calendario.selecionado,
@@ -348,14 +491,24 @@ button {
   transform: translateY(-2px);
 }
 
+.dia-calendario.selecionado {
+  background: linear-gradient(135deg, #ffd84d, #d4af37);
+  color: #080808;
+  box-shadow: 0 16px 26px rgba(212, 175, 55, 0.28);
+}
+
+.dia-calendario.selecionado small {
+  color: #080808;
+}
+
 .horarios-box h3 {
-  font-size: 24px;
+  font-size: 26px;
   margin-bottom: 4px;
 }
 
 .horarios-box p {
   color: #c9c9c9;
-  font-size: 14px;
+  font-size: 18px;
   margin-bottom: 14px;
 }
 
@@ -413,12 +566,12 @@ button {
 }
 
 .horario.livre {
-  background: #15803d;
+  background: linear-gradient(145deg, #15803d, #116530);
   cursor: pointer;
 }
 
 .horario.ocupado {
-  background: #991b1b;
+  background: linear-gradient(145deg, #991b1b, #6f1515);
   cursor: not-allowed;
   opacity: 0.65;
 }
@@ -439,18 +592,120 @@ button {
 }
 
 .form-agendamento {
-  max-width: 720px;
-  margin: 22px auto 0;
+  max-width: 580px;
+  margin: 28px auto 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
-  padding: 20px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
 }
 
-.form-agendamento select,
+.servicos-cliente,
 .resumo-escolha,
 .form-agendamento button {
   grid-column: 1 / -1;
+}
+
+.servicos-cliente {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: #101315;
+}
+
+.servicos-cliente > summary {
+  align-items: center;
+  color: #fff;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 12px;
+  font-size: 14px;
+  font-weight: 800;
+  margin-bottom: 2px;
+  list-style: none;
+}
+
+.servicos-cliente > summary::-webkit-details-marker {
+  display: none;
+}
+
+.servicos-cliente > summary::after {
+  content: "+";
+  color: #facc15;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.servicos-cliente[open] > summary::after {
+  content: "-";
+}
+
+.servico-opcao,
+.servicos-total {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 42px;
+}
+
+.servico-opcao {
+  padding: 9px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: #f8fafc;
+  cursor: pointer;
+}
+
+.servico-opcao:hover {
+  border-color: rgba(212, 175, 55, 0.36);
+  background: rgba(212, 175, 55, 0.08);
+}
+
+.servico-opcao span:nth-child(2),
+.servicos-cliente > summary strong,
+.servicos-total strong {
+  color: #facc15;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.servico-opcao input {
+  width: 18px;
+  min-height: 18px;
+  accent-color: #d4af37;
+}
+
+.servicos-total {
+  margin-top: 4px;
+  padding: 11px 10px 0;
+  border-top: 1px solid rgba(212, 175, 55, 0.18);
+  color: #f8fafc;
+  font-weight: 800;
+}
+
+#btnAgendar {
+  align-items: center;
+  display: inline-flex;
+  justify-content: center;
+  gap: 10px;
+  order: -1;
+}
+
+#btnAgendar::before {
+  content: "";
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16.03 4C9.4 4 4 9.33 4 15.89c0 2.1.56 4.14 1.62 5.94L4 28l6.33-1.63A12.1 12.1 0 0 0 16.03 28C22.66 28 28 22.67 28 16.1S22.66 4 16.03 4Zm0 21.86c-1.9 0-3.76-.5-5.38-1.44l-.39-.23-3.75.97.99-3.62-.25-.38a9.83 9.83 0 0 1-1.51-5.27c0-5.38 4.44-9.76 9.9-9.76 2.65 0 5.13 1.03 7 2.88a9.64 9.64 0 0 1 2.9 6.86c0 5.38-4.44 9.99-9.51 9.99Zm5.43-7.32c-.3-.15-1.76-.86-2.03-.96-.27-.1-.47-.15-.67.15-.2.29-.77.96-.95 1.16-.17.2-.35.22-.64.07-.3-.15-1.25-.46-2.38-1.46a8.9 8.9 0 0 1-1.64-2.03c-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.03-.52-.07-.15-.67-1.6-.92-2.19-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.29-1.04 1.01-1.04 2.47 0 1.45 1.07 2.86 1.22 3.06.15.2 2.1 3.17 5.1 4.45.71.3 1.27.49 1.7.63.72.22 1.37.19 1.88.12.57-.08 1.76-.71 2-1.4.25-.69.25-1.28.18-1.4-.07-.13-.27-.2-.57-.35Z'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16.03 4C9.4 4 4 9.33 4 15.89c0 2.1.56 4.14 1.62 5.94L4 28l6.33-1.63A12.1 12.1 0 0 0 16.03 28C22.66 28 28 22.67 28 16.1S22.66 4 16.03 4Zm0 21.86c-1.9 0-3.76-.5-5.38-1.44l-.39-.23-3.75.97.99-3.62-.25-.38a9.83 9.83 0 0 1-1.51-5.27c0-5.38 4.44-9.76 9.9-9.76 2.65 0 5.13 1.03 7 2.88a9.64 9.64 0 0 1 2.9 6.86c0 5.38-4.44 9.99-9.51 9.99Zm5.43-7.32c-.3-.15-1.76-.86-2.03-.96-.27-.1-.47-.15-.67.15-.2.29-.77.96-.95 1.16-.17.2-.35.22-.64.07-.3-.15-1.25-.46-2.38-1.46a8.9 8.9 0 0 1-1.64-2.03c-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.03-.52-.07-.15-.67-1.6-.92-2.19-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.29-1.04 1.01-1.04 2.47 0 1.45 1.07 2.86 1.22 3.06.15.2 2.1 3.17 5.1 4.45.71.3 1.27.49 1.7.63.72.22 1.37.19 1.88.12.57-.08 1.76-.71 2-1.4.25-.69.25-1.28.18-1.4-.07-.13-.27-.2-.57-.35Z'/%3E%3C/svg%3E") center / contain no-repeat;
 }
 
 .resumo-escolha {
@@ -476,7 +731,7 @@ select {
   min-height: 48px;
   padding: 14px;
   border-radius: 8px;
-  background: #151515;
+  background: #101315;
   color: #fff;
   border: 1px solid rgba(255, 255, 255, 0.12);
   outline: none;
@@ -490,7 +745,7 @@ select:focus {
 
 button:disabled {
   cursor: not-allowed;
-  opacity: 0.55;
+  opacity: 0.78;
 }
 
 footer {
@@ -500,11 +755,154 @@ footer {
   color: #999;
 }
 
+@media (min-width: 901px) {
+  .agendamento {
+    padding-top: 54px;
+  }
+
+  .agendamento .container {
+    display: grid;
+    grid-template-columns: minmax(210px, 280px) minmax(0, 520px) minmax(250px, 340px);
+    align-items: start;
+    gap: 24px;
+    max-width: 1220px;
+  }
+
+  .filtro-barbeiro-container {
+    position: sticky;
+    top: 112px;
+    align-self: start;
+    min-height: 260px;
+    margin: 0;
+    max-width: none;
+    padding: 28px;
+    border-color: rgba(212, 175, 55, 0.28);
+    background:
+      linear-gradient(145deg, rgba(18, 22, 24, 0.96), rgba(6, 9, 11, 0.96)),
+      radial-gradient(circle at 12% 0, rgba(250, 204, 21, 0.16), transparent 34%);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.38);
+  }
+
+  .filtro-barbeiro-container label {
+    font-size: 16px;
+  }
+
+  .barbeiro-opcoes {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .barbeiro-opcao {
+    min-height: 66px;
+    justify-content: flex-start;
+    padding: 18px 20px;
+    text-align: left;
+    font-size: 17px;
+  }
+
+  .agenda-layout {
+    grid-column: 2;
+    gap: 18px;
+    min-width: 0;
+  }
+
+  .calendario-box {
+    justify-self: start;
+    width: min(100%, 520px);
+    padding: 14px;
+    border-radius: 10px;
+  }
+
+  .calendario-topo {
+    grid-template-columns: 40px minmax(0, 1fr) 40px 40px;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .calendario-topo strong {
+    font-size: 16px;
+  }
+
+  .icone-calendario {
+    width: 34px;
+    height: 34px;
+    border-width: 3px;
+  }
+
+  .btn-calendario {
+    width: 40px;
+    height: 40px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    font-size: 28px;
+    font-weight: 400;
+  }
+
+  .legenda {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    justify-content: stretch;
+    gap: 8px 10px;
+    margin: 0 0 12px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font-size: 11px;
+  }
+
+  .dot {
+    width: 10px;
+    height: 10px;
+  }
+
+  .dias-semana,
+  .calendario-dias {
+    gap: 6px;
+  }
+
+  .dias-semana {
+    font-size: 11px;
+    margin-bottom: 8px;
+  }
+
+  .dia-vazio {
+    min-height: 52px;
+  }
+
+  .dia-calendario {
+    min-height: 52px;
+    border-radius: 8px;
+    padding: 7px 4px;
+    gap: 5px;
+  }
+
+  .dia-calendario strong {
+    font-size: 14px;
+  }
+
+  .dia-calendario span {
+    width: 8px;
+    height: 8px;
+  }
+
+  .horarios-box {
+    padding: 26px 30px;
+  }
+
+  .form-agendamento {
+    grid-column: 3;
+    grid-template-columns: 1fr;
+    max-width: none;
+    width: 100%;
+    margin-top: 0;
+  }
+}
+
 @media (max-width: 900px) {
   header {
     grid-template-columns: 1fr auto;
     gap: 12px;
-    padding: 8px 14px; /* Header um pouco mais fino em tablets/celulares */
+    padding: 24px 8vw;
   }
 
   nav {
@@ -551,18 +949,18 @@ footer {
   }
 
   .logo {
-    align-items: center;
-    justify-self: center;
-    margin-left: 46px;
+    align-items: flex-start;
+    justify-self: start;
+    margin-left: 0;
   }
 
   .logo span {
-    font-size: 10px;
-    letter-spacing: 1.5px;
+    font-size: 17px;
+    letter-spacing: 6px;
   }
 
   .logo strong {
-    font-size: 25px;
+    font-size: 56px;
   }
 
   .agenda-layout {
@@ -571,52 +969,179 @@ footer {
 }
 
 @media (max-width: 560px) {
+  html {
+    scroll-padding-top: 76px;
+  }
+
+  body {
+    background:
+      linear-gradient(90deg, #15191d 0, #050606 12%, #050606 88%, #15191d 100%);
+  }
+
   header {
-    min-height: 58px;
-    padding: 6px 12px;
+    position: relative;
+    min-height: 118px;
+    padding: 28px 9vw 22px;
+    background: #020607;
+    border-bottom-color: rgba(212, 175, 55, 0.22);
+    backdrop-filter: none;
   }
 
   .hero {
-    min-height: 78vh;
+    align-items: flex-start;
+    min-height: 410px;
+    padding-bottom: 0;
+    background-position: center top;
   }
 
   .container {
-    padding: 0;
+    padding: 0 18px;
+  }
+
+  .logo span {
+    font-size: 13px;
+    letter-spacing: 5px;
   }
 
   .logo strong {
-    font-size: 22px;
+    font-size: 52px;
+    line-height: 0.94;
+  }
+
+  .menu-mobile {
+    width: 52px;
+    height: 52px;
+  }
+
+  .menu-mobile span {
+    width: 34px;
+    height: 4px;
   }
 
   .agendamento {
-    padding: 150px 10px 70px;
+    margin-top: -54px;
+    padding: 0 0 28px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .agendamento h2 {
+    font-size: 28px;
+    line-height: 1.1;
+  }
+
+  .agendamento > .container > p {
+    margin-bottom: 18px;
+  }
+
+  .agenda-layout {
+    gap: 0;
   }
 
   .calendario-box,
   .horarios-box,
   .form-agendamento {
-    padding: 14px;
+    padding: 24px 16px;
+    border-radius: 16px;
+  }
+
+  .calendario-box {
+    display: flex;
+    flex-direction: column;
+    border-radius: 18px;
+    background:
+      linear-gradient(145deg, rgba(9, 15, 18, 0.98), rgba(3, 7, 9, 0.98)),
+      radial-gradient(circle at 18% 0, rgba(212, 175, 55, 0.12), transparent 34%);
+    box-shadow: 0 24px 72px rgba(0, 0, 0, 0.62);
+  }
+
+  .horarios-box {
+    margin-top: -1px;
+    border-radius: 0 0 18px 18px;
+    border-top: 0;
+    background: rgba(5, 9, 11, 0.96);
+    box-shadow: none;
+    padding: 18px 16px 20px;
+  }
+
+  .calendario-topo {
+    order: 1;
+    grid-template-columns: 42px minmax(0, 1fr) 40px 40px;
+    gap: 10px;
+    margin-bottom: 26px;
+  }
+
+  .calendario-topo strong {
+    font-size: 27px;
+  }
+
+  .icone-calendario {
+    width: 36px;
+    height: 36px;
+    border-width: 3px;
+  }
+
+  .btn-calendario {
+    width: 40px;
+    height: 40px;
+    font-size: 40px;
+  }
+
+  .legenda {
+    order: 4;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    justify-content: stretch;
+    gap: 14px 10px;
+    font-size: 12px;
+    margin: 20px 0 0;
+    padding: 14px 12px;
+    border-radius: 12px;
+    background: rgba(12, 18, 22, 0.82);
+  }
+
+  .dot {
+    width: 14px;
+    height: 14px;
   }
 
   .dias-semana,
   .calendario-dias {
-    gap: 4px;
+    gap: 7px;
+  }
+
+  .dias-semana {
+    order: 2;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 12px;
+  }
+
+  .calendario-dias {
+    order: 3;
   }
 
   .dia-vazio,
   .dia-calendario {
-    min-height: 58px;
+    min-height: 0;
   }
 
   .dia-calendario {
-    padding: 6px 4px;
+    border-radius: 10px;
+    padding: 8px 2px;
+    background: linear-gradient(145deg, #151b20, #0a1013);
   }
 
   .dia-calendario strong {
-    font-size: 14px;
+    font-size: 18px;
   }
 
   .dia-calendario span {
+    width: 10px;
+    height: 10px;
+  }
+
+  .dia-calendario small {
     font-size: 8px;
   }
 
@@ -631,6 +1156,9 @@ footer {
 
   .form-agendamento {
     grid-template-columns: 1fr;
+    padding: 0;
+    margin-top: 24px;
+    max-width: 78%;
   }
 
   .horario {
@@ -648,12 +1176,55 @@ footer {
   }
 
   .form-agendamento button {
-    bottom: 10px;
-    position: sticky;
+    align-items: center;
+    display: inline-flex;
+    justify-content: center;
+    gap: 14px;
     z-index: 20;
+    min-height: 62px;
+    font-size: 18px;
+    border-radius: 12px;
+  }
+
+  #btnAgendar::before {
+    width: 24px;
+    height: 24px;
+  }
+
+  .conteudo {
+    padding: 96px 28px 92px;
+    text-align: center;
+  }
+
+  .conteudo::before {
+    font-size: 14px;
+    letter-spacing: 5px;
+    margin-bottom: 16px;
+  }
+
+  .conteudo h1 {
+    font-size: 42px;
+    line-height: 1.05;
+    max-width: 380px;
+    margin: 0 auto;
   }
 
   .conteudo p {
-    font-size: 16px;
+    display: block;
+    font-size: 19px;
+    line-height: 1.45;
+    margin-top: 18px;
+    max-width: 360px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .conteudo a,
+  .conteudo button {
+    width: 100%;
+  }
+
+  .conteudo a {
+    margin-top: 26px;
   }
 }

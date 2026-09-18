@@ -18,11 +18,9 @@
     <strong>Abner</strong>
   </a>
 
-  <nav>
+  <nav aria-label="Menu principal">
     <a href="#">Início</a>
-    <a href="#">Serviços</a>
-    <a href="#">Produtos</a>
-    <a href="#">Galeria</a>
+    <a href="#agendamento">Agendar</a>
     <a href="admin.html">Painel</a>
   </nav>
 
@@ -40,11 +38,8 @@
     <div class="overlay"></div>
 
     <div class="conteudo">
-      <h1>Seu estilo começa aqui</h1>
-      <p>Cortes modernos, barba e sobrancelha com qualidade.</p>
-      <a href="#agendamento">
-        <button>Agendar Horário</button>
-      </a>
+      <h1>Agende seu horário com facilidade</h1>
+      <p>Escolha o dia e o horário ideal e garanta seu atendimento na Barbearia Abner.</p>
     </div>
   </section>
 
@@ -52,12 +47,16 @@
   <section class="agendamento" id="agendamento">
     <div class="container">
       <h2>Agende seu horário</h2>
-      <p>Veja os dias com vagas e escolha um horário livre.</p>
+      <p>Escolha o dia, veja os horários livres e finalize pelo WhatsApp.</p>
 
       <div class="filtro-barbeiro-container">
-        <label for="filtroBarbeiro">Filtrar por Barbeiro:</label>
-        <select id="filtroBarbeiro">
-          <option value="todos">Todos os Barbeiros</option>
+        <label>Escolha o barbeiro</label>
+        <div class="barbeiro-opcoes" aria-label="Escolha o barbeiro">
+          <button type="button" class="barbeiro-opcao" data-barbeiro="Isac">Isac</button>
+          <button type="button" class="barbeiro-opcao" data-barbeiro="Carlos">Carlos</button>
+        </div>
+        <select id="filtroBarbeiro" aria-hidden="true" tabindex="-1">
+          <option value="">Escolha o barbeiro</option>
           <option value="Isac">Isac</option>
           <option value="Carlos">Carlos</option>
         </select>
@@ -66,26 +65,27 @@
       <div class="agenda-layout">
         <div class="calendario-box" id="calendario">
           <div class="calendario-topo">
-            <button type="button" id="mesAnterior" class="btn-calendario">‹</button>
+            <span class="icone-calendario" aria-hidden="true"></span>
             <strong id="mesAtual">Carregando</strong>
+            <button type="button" id="mesAnterior" class="btn-calendario">‹</button>
             <button type="button" id="proximoMes" class="btn-calendario">›</button>
           </div>
 
           <div class="legenda">
-            <span><i class="dot vagas"></i> Vagas</span>
+            <span><i class="dot tem-vaga"></i> Tem vaga</span>
+            <span><i class="dot poucas-vagas"></i> Poucas vagas</span>
+            <span><i class="dot lotado"></i> Lotado</span>
             <span><i class="dot indisponivel"></i> Indisponível</span>
-            <span><i class="dot sem-agenda"></i> Sem agenda</span>
-            <span><i class="dot passado"></i> Passou</span>
           </div>
 
           <div class="dias-semana">
-            <span>Dom</span>
             <span>Seg</span>
             <span>Ter</span>
             <span>Qua</span>
             <span>Qui</span>
             <span>Sex</span>
             <span>Sáb</span>
+            <span>Dom</span>
           </div>
 
           <div id="calendarioDias" class="calendario-dias"></div>
@@ -93,7 +93,7 @@
 
         <div class="horarios-box">
           <h3 id="tituloDia">Selecione um dia</h3>
-          <p id="resumoDia">Os horários disponíveis aparecem aqui.</p>
+          <p id="resumoDia">Toque em uma data para ver os horários.</p>
 
           <!-- 🔥 HORÁRIOS ESTILO APP -->
           <div id="horarios" class="calendario"></div>
@@ -105,13 +105,19 @@
         <input type="text" id="nomeCliente" placeholder="Seu nome" autocomplete="name" required>
         <input type="tel" id="telefoneCliente" placeholder="Seu telefone" inputmode="tel" autocomplete="tel" pattern="[0-9+()\- ]{8,}" required>
 
-        <select id="servicoCliente" required>
-          <option value="">Escolha o serviço</option>
-          <option>Corte</option>
-          <option>Barba</option>
-          <option>Corte + Barba</option>
-          <option>Sobrancelha</option>
-        </select>
+        <details class="servicos-cliente" id="servicosCliente">
+          <summary>
+            <span id="resumoServicosTexto">Escolha o serviço</span>
+            <strong id="resumoServicosTotal">R$ 0,00</strong>
+          </summary>
+
+          <div id="listaServicosCliente"></div>
+
+          <div class="servicos-total">
+            <span>Saldo total</span>
+            <strong id="totalServicosCliente">R$ 0,00</strong>
+          </div>
+        </details>
 
         <!-- escondidos (preenchidos automaticamente) -->
         <input type="date" id="dataSelecionada" hidden>
@@ -120,7 +126,7 @@
 
         <p id="resumoEscolha" class="resumo-escolha">Escolha uma data e um horário livre.</p>
 
-        <button type="submit" id="btnAgendar" disabled>Escolha um horário</button>
+        <button type="submit" id="btnAgendar" disabled>Agendar Horário</button>
       </form>
     </div>
   </section>
@@ -170,11 +176,32 @@ const resumoEscolha = document.getElementById("resumoEscolha");
 const btnAgendar = document.getElementById("btnAgendar");
 const nomeCliente = document.getElementById("nomeCliente");
 const telefoneCliente = document.getElementById("telefoneCliente");
-const servicoCliente = document.getElementById("servicoCliente");
+const listaServicosCliente = document.getElementById("listaServicosCliente");
+const totalServicosCliente = document.getElementById("totalServicosCliente");
+const resumoServicosTexto = document.getElementById("resumoServicosTexto");
+const resumoServicosTotal = document.getElementById("resumoServicosTotal");
 const filtroBarbeiro = document.getElementById("filtroBarbeiro");
+const botoesBarbeiro = document.querySelectorAll("[data-barbeiro]");
+const barbeiroSelecionadoInput = document.getElementById("barbeiroSelecionado");
 let horarios = [];
+let servicosCadastrados = [];
+let bloqueioPadrao = {
+  ativo: false,
+  inicio: "12:00",
+  fim: "14:00"
+};
 let dataAtiva = "";
 let mesVisivel = new Date();
+const servicosPadrao = [
+  { id: "padrao-corte", nome: "Corte", preco: 30, duracao: 30, padrao: true },
+  { id: "padrao-barba", nome: "Barba", preco: 20, duracao: 30, padrao: true },
+  { id: "padrao-corte-barba", nome: "Corte + Barba", preco: 45, duracao: 60, padrao: true },
+  { id: "padrao-sobrancelha", nome: "Sobrancelha", preco: 10, duracao: 15, padrao: true }
+];
+const barbeirosPadrao = ["Isac", "Carlos"];
+const horaAberturaPadrao = "08:00";
+const horaFechamentoPadrao = "22:00";
+const intervaloPadraoAgenda = 30;
 
 function dataHojeChave() {
   const hoje = new Date();
@@ -191,7 +218,8 @@ function limparSelecao() {
   resumoEscolha.textContent = "Escolha uma data e um horário livre.";
   resumoEscolha.classList.remove("confirmado");
   btnAgendar.disabled = true;
-  btnAgendar.textContent = "Escolha um horário";
+  btnAgendar.textContent = "Agendar Horário";
+  barbeiroSelecionadoInput.value = "";
 }
 
 function formatarDataBR(data) {
@@ -199,11 +227,184 @@ function formatarDataBR(data) {
   return `${dia}/${mes}/${ano}`;
 }
 
+function formatarMoeda(valor) {
+  return Number(valor || 0).toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL"
+  });
+}
+
+function normalizarNomeServico(nome) {
+  return String(nome || "").trim().toLowerCase();
+}
+
+function criarOpcaoServico(servico) {
+  const label = document.createElement("label");
+  const nome = document.createElement("span");
+  const preco = document.createElement("span");
+  const input = document.createElement("input");
+
+  label.className = "servico-opcao";
+  nome.textContent = servico.nome;
+  preco.textContent = formatarMoeda(servico.preco);
+  input.type = "checkbox";
+  input.name = "servicosCliente";
+  input.value = servico.nome;
+  input.dataset.preco = Number(servico.preco || 0);
+
+  label.append(nome, preco, input);
+
+  return label;
+}
+
+function renderizarServicosCliente() {
+  if (!listaServicosCliente) return;
+
+  listaServicosCliente.innerHTML = "";
+
+  servicosCadastrados.forEach((servico) => {
+    listaServicosCliente.appendChild(criarOpcaoServico(servico));
+  });
+
+  atualizarTotalServicos();
+}
+
+function obterServicosSelecionados() {
+  return [...document.querySelectorAll("input[name='servicosCliente']")]
+    .filter((servico) => servico.checked)
+    .map((servico) => ({
+      nome: servico.value,
+      preco: Number(servico.dataset.preco || 0)
+    }));
+}
+
+function atualizarTotalServicos() {
+  const servicosSelecionados = obterServicosSelecionados();
+  const total = servicosSelecionados
+    .reduce((soma, servico) => soma + servico.preco, 0);
+  const totalFormatado = formatarMoeda(total);
+
+  totalServicosCliente.textContent = totalFormatado;
+  resumoServicosTotal.textContent = totalFormatado;
+  resumoServicosTexto.textContent = servicosSelecionados.length
+    ? `${servicosSelecionados.length} serviço${servicosSelecionados.length === 1 ? "" : "s"} selecionado${servicosSelecionados.length === 1 ? "" : "s"}`
+    : "Escolha o serviço";
+}
+
+listaServicosCliente?.addEventListener("change", (event) => {
+  if (event.target.matches("input[name='servicosCliente']")) {
+    atualizarTotalServicos();
+  }
+});
+
 function formatarChaveData(data) {
   const ano = data.getFullYear();
   const mes = String(data.getMonth() + 1).padStart(2, "0");
   const dia = String(data.getDate()).padStart(2, "0");
   return `${ano}-${mes}-${dia}`;
+}
+
+function converterHoraParaMinutos(hora) {
+  const [horas, minutos] = hora.split(":").map(Number);
+  return horas * 60 + minutos;
+}
+
+function converterMinutosParaHora(totalMinutos) {
+  const horas = Math.floor(totalMinutos / 60);
+  const minutos = totalMinutos % 60;
+  return `${String(horas).padStart(2, "0")}:${String(minutos).padStart(2, "0")}`;
+}
+
+function horarioEstaNoBloqueioPadrao(hora) {
+  if (!bloqueioPadrao.ativo || !bloqueioPadrao.inicio || !bloqueioPadrao.fim || !hora) {
+    return false;
+  }
+
+  const minutoHorario = converterHoraParaMinutos(hora);
+  const minutoInicio = converterHoraParaMinutos(bloqueioPadrao.inicio);
+  const minutoFim = converterHoraParaMinutos(bloqueioPadrao.fim);
+
+  return minutoFim > minutoInicio
+    && minutoHorario >= minutoInicio
+    && minutoHorario < minutoFim;
+}
+
+function chaveHorario(horario) {
+  return `${horario.data}|${horario.hora || "dia"}|${horario.barber || "geral"}`;
+}
+
+function obterBarbeiroAtivo() {
+  const barbeiroAtivo = filtroBarbeiro?.value || "";
+  return barbeirosPadrao.includes(barbeiroAtivo) ? barbeiroAtivo : "";
+}
+
+function atualizarBotoesBarbeiro() {
+  const barbeiroAtivo = obterBarbeiroAtivo();
+
+  botoesBarbeiro.forEach((botao) => {
+    const selecionado = botao.dataset.barbeiro === barbeiroAtivo;
+    botao.classList.toggle("selecionado", selecionado);
+    botao.setAttribute("aria-pressed", selecionado ? "true" : "false");
+  });
+}
+
+function criarHorariosPadraoDia(data) {
+  const barbeiroAtivo = obterBarbeiroAtivo();
+  const lista = [];
+
+  if (!barbeiroAtivo) return lista;
+
+  const inicio = converterHoraParaMinutos(horaAberturaPadrao);
+  const fim = converterHoraParaMinutos(horaFechamentoPadrao);
+
+  for (let minuto = inicio; minuto <= fim; minuto += intervaloPadraoAgenda) {
+    const hora = converterMinutosParaHora(minuto);
+    const bloqueadoPadrao = horarioEstaNoBloqueioPadrao(hora);
+
+    lista.push({
+      id: `padrao-${data}-${barbeiroAtivo}-${hora}`,
+      data,
+      hora,
+      status: bloqueadoPadrao ? "bloqueado" : "livre",
+      barber: barbeiroAtivo,
+      tipoBloqueio: bloqueadoPadrao ? "padrao" : null,
+      padrao: true
+    });
+  }
+
+  return lista;
+}
+
+function diaEstaBloqueado(data) {
+  return horarios.some(h => h.data === data && h.status === "bloqueado" && h.tipoBloqueio === "dia");
+}
+
+function obterHorariosDoDia(data) {
+  const barbeiroAtivo = obterBarbeiroAtivo();
+
+  if (!barbeiroAtivo) return [];
+
+  const registrosDoDia = horarios.filter(h => {
+    if (h.data !== data) return false;
+    return h.barber === barbeiroAtivo || h.tipoBloqueio === "dia";
+  });
+  const mapa = new Map();
+
+  if (!diaEstaBloqueado(data)) {
+    criarHorariosPadraoDia(data).forEach((horario) => {
+      mapa.set(chaveHorario(horario), horario);
+    });
+  }
+
+  registrosDoDia.forEach((horario) => {
+    if (horario.tipoBloqueio === "dia") return;
+    mapa.set(chaveHorario(horario), horario);
+  });
+
+  return [...mapa.values()].sort((a, b) => {
+    return new Date(a.data + "T" + a.hora) - new Date(b.data + "T" + b.hora)
+      || String(a.barber || "").localeCompare(String(b.barber || ""), "pt-BR");
+  });
 }
 
 async function limparVagasPassadas() {
@@ -222,40 +423,58 @@ async function limparVagasPassadas() {
 }
 
 function getHorariosFiltrados() {
-  const barbeiroAtivo = filtroBarbeiro?.value || "todos";
-  return horarios.filter(h => 
-    barbeiroAtivo === "todos" || h.barber === barbeiroAtivo
-  );
+  const barbeiroAtivo = obterBarbeiroAtivo();
+  return barbeiroAtivo ? horarios.filter(h => h.barber === barbeiroAtivo) : [];
 }
 
 function obterStatusDia(data) {
-  if (data < dataHojeChave()) {
+  if (!obterBarbeiroAtivo()) {
     return {
-      classe: "passado",
-      texto: "Passou",
+      classe: "indisponivel",
+      texto: "Escolha o barbeiro",
       livres: 0,
       total: 0,
       bloqueado: true
     };
   }
 
-  const horariosDoDia = getHorariosFiltrados().filter(h => h.data === data);
-  const livres = horariosDoDia.filter(h => h.status !== "ocupado").length;
-
-  if (horariosDoDia.length === 0) {
+  if (data < dataHojeChave()) {
     return {
-      classe: "sem-agenda",
-      texto: "Sem agenda",
-      livres,
+      classe: "indisponivel",
+      texto: "Indisponível",
+      livres: 0,
       total: 0,
+      bloqueado: true
+    };
+  }
+
+  if (diaEstaBloqueado(data)) {
+    return {
+      classe: "indisponivel",
+      texto: "Indisponível",
+      livres: 0,
+      total: 0,
+      bloqueado: true
+    };
+  }
+
+  const horariosDoDia = obterHorariosDoDia(data);
+  const livres = horariosDoDia.filter(h => h.status === "livre").length;
+
+  if (livres === 0) {
+    return {
+      classe: "lotado",
+      texto: "Lotado",
+      livres,
+      total: horariosDoDia.length,
       bloqueado: false
     };
   }
 
-  if (livres > 0) {
+  if (livres <= 2 || livres / horariosDoDia.length <= 0.35) {
     return {
-      classe: "vagas",
-      texto: `${livres} vaga${livres > 1 ? "s" : ""}`,
+      classe: "poucas-vagas",
+      texto: "Poucas vagas",
       livres,
       total: horariosDoDia.length,
       bloqueado: false
@@ -263,8 +482,8 @@ function obterStatusDia(data) {
   }
 
   return {
-    classe: "indisponivel",
-    texto: "Indisponível",
+    classe: "tem-vaga",
+    texto: "Tem vaga",
     livres,
     total: horariosDoDia.length,
     bloqueado: false
@@ -273,6 +492,7 @@ function obterStatusDia(data) {
 
 function renderizarCalendario() {
   calendarioDias.innerHTML = "";
+  atualizarBotoesBarbeiro();
 
   const ano = mesVisivel.getFullYear();
   const mes = mesVisivel.getMonth();
@@ -287,7 +507,9 @@ function renderizarCalendario() {
   const ultimoDia = new Date(ano, mes + 1, 0);
   const totalDias = ultimoDia.getDate();
 
-  for (let i = 0; i < primeiroDia.getDay(); i++) {
+  const deslocamentoInicial = (primeiroDia.getDay() + 6) % 7;
+
+  for (let i = 0; i < deslocamentoInicial; i++) {
     const vazio = document.createElement("div");
     vazio.className = "dia-vazio";
     calendarioDias.appendChild(vazio);
@@ -307,9 +529,18 @@ function renderizarCalendario() {
       botao.classList.add("selecionado");
     }
 
+    const rotulosCurtos = {
+      "tem-vaga": "Vaga",
+      "poucas-vagas": "Poucas",
+      "lotado": "Lotado",
+      "indisponivel": "Indisp."
+    };
+
+    botao.setAttribute("aria-label", `${dia} de ${nomesMeses[mes]}: ${status.texto}`);
     botao.innerHTML = `
       <strong>${dia}</strong>
-      <span>${status.texto}</span>
+      <span aria-hidden="true"></span>
+      <small>${rotulosCurtos[status.classe] || status.texto}</small>
     `;
 
     if (!status.bloqueado) {
@@ -345,31 +576,42 @@ function renderizarHorariosDoDia() {
   container.innerHTML = "";
   limparSelecao();
 
+  const barbeiroAtivo = obterBarbeiroAtivo();
+
+  if (!barbeiroAtivo) {
+    tituloDia.textContent = "Escolha o barbeiro";
+    resumoDia.textContent = "Selecione Isac ou Carlos para ver os horários livres.";
+    container.innerHTML = "<p class=\"estado-vazio\">Escolha um barbeiro acima para liberar os horários.</p>";
+    return;
+  }
+
   if (!dataAtiva) {
     tituloDia.textContent = "Selecione um dia";
-    resumoDia.textContent = "Os horários disponíveis aparecem aqui.";
+    resumoDia.textContent = "Toque em uma data para ver os horários.";
     container.innerHTML = "<p class=\"estado-vazio\">Toque em um dia no calendário.</p>";
     return;
   }
 
-  const filtrados = getHorariosFiltrados();
   const statusDia = obterStatusDia(dataAtiva);
-  const horariosDoDia = filtrados.filter(h => h.data === dataAtiva);
+  const horariosDoDia = obterHorariosDoDia(dataAtiva);
+  const horariosDisponiveis = horariosDoDia.filter(h => h.status === "livre");
 
-  tituloDia.textContent = formatarDataBR(dataAtiva);
+  tituloDia.textContent = `${barbeiroAtivo} · ${formatarDataBR(dataAtiva)}`;
   resumoDia.textContent = statusDia.total === 0
-    ? "Nenhum horário cadastrado para este dia."
-    : `${statusDia.livres} vaga${statusDia.livres === 1 ? "" : "s"} livre${statusDia.livres === 1 ? "" : "s"} de ${statusDia.total} horário${statusDia.total === 1 ? "" : "s"}.`;
+    ? "Dia indisponível."
+    : `${statusDia.texto}: ${statusDia.livres} vaga${statusDia.livres === 1 ? "" : "s"} livre${statusDia.livres === 1 ? "" : "s"} de ${statusDia.total} horário${statusDia.total === 1 ? "" : "s"}.`;
 
-  if (horariosDoDia.length === 0) {
-    container.innerHTML = "<p class=\"estado-vazio\">Ainda não há horários para esse dia. Escolha outra data.</p>";
+  if (horariosDisponiveis.length === 0) {
+    container.innerHTML = statusDia.total === 0
+      ? "<p class=\"estado-vazio\">Dia indisponível. Escolha outra data.</p>"
+      : "<p class=\"estado-vazio\">Esse dia está lotado. Escolha outra data.</p>";
     return;
   }
 
   let periodoAtual = "";
   let listaPeriodo = null;
 
-  horariosDoDia.forEach(h => {
+  horariosDisponiveis.forEach(h => {
     const periodo = obterPeriodo(h.hora);
 
     if (periodo !== periodoAtual) {
@@ -378,12 +620,9 @@ function renderizarHorariosDoDia() {
     }
 
     const div = document.createElement("div");
-    const status = h.status === "ocupado" ? "ocupado" : "livre";
-
-    div.classList.add("horario", status);
+    div.classList.add("horario", "livre");
     if (h.barber) div.classList.add(h.barber.toLowerCase());
 
-    const textoStatus = status === "ocupado" ? "Marcado" : "Livre";
     const barberClass = h.barber ? `barber-tag-${h.barber.toLowerCase()}` : "";
     const labelBarbeiro = h.barber ? `<span class="barber-tag ${barberClass}">Barbeiro: ${h.barber}</span>` : "";
 
@@ -392,24 +631,22 @@ function renderizarHorariosDoDia() {
       ${labelBarbeiro}
     `;
 
-    if (status === "livre") {
-      div.addEventListener("click", () => {
-        limparSelecao();
-        div.classList.add("selecionado");
-        dataSelecionada.value = h.data;
-        horaSelecionada.value = h.hora;
-        barbeiroSelecionadoInput.value = h.barber || "";
-        resumoEscolha.textContent = `Você escolheu: ${formatarDataBR(h.data)} às ${h.hora}`;
-        resumoEscolha.classList.add("confirmado");
-        btnAgendar.disabled = false;
-        btnAgendar.textContent = "Agendar pelo WhatsApp";
+    div.addEventListener("click", () => {
+      limparSelecao();
+      div.classList.add("selecionado");
+      dataSelecionada.value = h.data;
+      horaSelecionada.value = h.hora;
+      barbeiroSelecionadoInput.value = h.barber || "";
+      resumoEscolha.textContent = `Você escolheu: ${formatarDataBR(h.data)} às ${h.hora}`;
+      resumoEscolha.classList.add("confirmado");
+      btnAgendar.disabled = false;
+      btnAgendar.textContent = "Agendar pelo WhatsApp";
 
-        if (window.matchMedia("(max-width: 700px)").matches) {
-          nomeCliente.scrollIntoView({ behavior: "smooth", block: "center" });
-          nomeCliente.focus({ preventScroll: true });
-        }
-      });
-    }
+      if (window.matchMedia("(max-width: 700px)").matches) {
+        nomeCliente.scrollIntoView({ behavior: "smooth", block: "center" });
+        nomeCliente.focus({ preventScroll: true });
+      }
+    });
 
     listaPeriodo.appendChild(div);
   });
@@ -420,19 +657,84 @@ mesAnterior.addEventListener("click", () => {
   renderizarCalendario();
 });
 
-if (filtroBarbeiro) {
-  filtroBarbeiro.addEventListener("change", () => {
+botoesBarbeiro.forEach((botao) => {
+  botao.addEventListener("click", () => {
+    filtroBarbeiro.value = botao.dataset.barbeiro;
+
+    if (!dataAtiva) {
+      dataAtiva = dataHojeChave();
+    }
+
+    limparSelecao();
     renderizarCalendario();
     renderizarHorariosDoDia();
   });
-}
+});
 
 proximoMes.addEventListener("click", () => {
   mesVisivel = new Date(mesVisivel.getFullYear(), mesVisivel.getMonth() + 1, 1);
   renderizarCalendario();
 });
 
+renderizarCalendario();
+renderizarHorariosDoDia();
+
 limparVagasPassadas().catch((error) => console.error("Erro ao limpar vagas passadas:", error));
+
+onValue(ref(db, "configuracoes/bloqueioPadrao"), (snapshot) => {
+  const dados = snapshot.val() || {};
+
+  bloqueioPadrao = {
+    ativo: Boolean(dados.ativo),
+    inicio: dados.inicio || "12:00",
+    fim: dados.fim || "14:00"
+  };
+
+  renderizarCalendario();
+  renderizarHorariosDoDia();
+}, (error) => {
+  console.error("Erro ao carregar bloqueio padrão:", error);
+});
+
+onValue(ref(db, "servicos"), (snapshot) => {
+  const personalizados = [];
+
+  if (snapshot.exists()) {
+    snapshot.forEach((child) => {
+      personalizados.push({
+        id: child.key,
+        ...child.val()
+      });
+    });
+  }
+
+  const ativos = personalizados.filter(item => !item.excluido);
+  const excluidos = new Set(personalizados.filter(item => item.excluido).map(item => item.id));
+  const idsPadrao = new Set(servicosPadrao.map(item => item.id));
+  const mapaPersonalizados = new Map(ativos.map(item => [item.id, item]));
+  const nomesPersonalizados = new Set(
+    ativos
+      .filter(item => !idsPadrao.has(item.id))
+      .map(item => normalizarNomeServico(item.nome))
+  );
+
+  servicosCadastrados = [
+    ...servicosPadrao
+      .filter(item => !excluidos.has(item.id))
+      .filter(item => mapaPersonalizados.has(item.id) || !nomesPersonalizados.has(normalizarNomeServico(item.nome)))
+      .map(item => ({
+        ...item,
+        ...(mapaPersonalizados.get(item.id) || {})
+      })),
+    ...ativos.filter(item => !idsPadrao.has(item.id))
+  ].sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
+
+  renderizarServicosCliente();
+}, (error) => {
+  console.error("Erro ao carregar serviços:", error);
+  servicosCadastrados = [...servicosPadrao].sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
+  renderizarServicosCliente();
+});
 
 onValue(ref(db, "horarios"), (snapshot) => {
   horarios = [];
@@ -447,20 +749,26 @@ onValue(ref(db, "horarios"), (snapshot) => {
   }
 
   horarios.sort((a, b) => {
-    return new Date(a.data + "T" + a.hora) - new Date(b.data + "T" + b.hora);
+    return new Date(a.data + "T" + (a.hora || "00:00")) - new Date(b.data + "T" + (b.hora || "00:00"));
   });
 
-  if (!dataAtiva && horarios.length > 0) {
+  if (!dataAtiva) {
     const hoje = dataHojeChave();
-    const primeiroDiaComVaga = horarios.find(h => h.status !== "ocupado" && h.data >= hoje);
+    const primeiroDiaComVaga = horarios.find(h => h.status === "livre" && h.data >= hoje);
 
     if (primeiroDiaComVaga) {
       dataAtiva = primeiroDiaComVaga.data;
       const [ano, mes] = dataAtiva.split("-");
       mesVisivel = new Date(Number(ano), Number(mes) - 1, 1);
+    } else {
+      dataAtiva = hoje;
     }
   }
 
+  renderizarCalendario();
+  renderizarHorariosDoDia();
+}, (error) => {
+  console.error("Erro ao carregar horários:", error);
   renderizarCalendario();
   renderizarHorariosDoDia();
 });
@@ -474,12 +782,13 @@ form.addEventListener("submit", function (e) {
 
   const nome = nomeCliente.value.trim();
   const telefone = telefoneCliente.value.trim();
-  const servico = servicoCliente.value;
+  const servicos = obterServicosSelecionados();
+  const totalServicos = servicos.reduce((soma, servico) => soma + servico.preco, 0);
   const data = document.getElementById("dataSelecionada").value;
   const hora = document.getElementById("horaSelecionada").value;
   const barbeiro = document.getElementById("barbeiroSelecionado").value;
 
-  if (!nome || !telefone || !servico || !data || !hora) {
+  if (!nome || !telefone || servicos.length === 0 || !data || !hora) {
     alert("Selecione um horário disponível!");
     return;
   }
@@ -491,7 +800,9 @@ form.addEventListener("submit", function (e) {
 
 👤 Nome: ${nome}
 📞 Telefone: ${telefone}
-✂️ Serviço: ${servico}
+✂️ Serviços:
+${servicos.map((servico) => `- ${servico.nome}: ${formatarMoeda(servico.preco)}`).join("\n")}
+💵 Saldo total: ${formatarMoeda(totalServicos)}
 📅 Data: ${dataFormatada}
 👨‍🦰 Barbeiro: ${barbeiro}
 ⏰ Hora: ${hora}

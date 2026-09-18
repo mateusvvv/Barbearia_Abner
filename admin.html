@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- GOOGLE FONTS -->
-  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Oswald:wght@400;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <title>Painel Admin</title>
 
@@ -35,180 +35,351 @@
 
   <!-- 💈 PAINEL -->
   <section id="painel" class="hidden">
+    <div class="admin-shell">
+      <aside class="sidebar" id="sidebarAdmin" aria-label="Menu administrativo">
+        <a class="brand" href="#dashboard" aria-label="Barbearia Abner painel">
+          <span>Barbearia</span>
+          <strong>Abner</strong>
+        </a>
 
-    <!-- TOPO -->
-    <div class="header admin-topo">
-      <div>
-        <span class="eyebrow">Realtime Database</span>
-        <h1>Painel da Barbearia</h1>
-      </div>
-      <div class="header-acoes">
-        <button class="btn btn-voltar-topo" onclick="window.location.href='index.html'">Voltar ao Site</button>
-        <button class="btn logout" onclick="logout()">Sair do Painel</button>
-      </div>
-    </div>
+        <nav class="side-nav">
+          <a class="active" href="#dashboard"><span aria-hidden="true">◆</span> Painel</a>
+          <a href="#agendamentos"><span aria-hidden="true">□</span> Agendamentos</a>
+          <a href="#servicos"><span aria-hidden="true">✂</span> Serviços</a>
+          <a href="#horarios"><span aria-hidden="true">○</span> Horários</a>
+          <a href="#clientes"><span aria-hidden="true">◇</span> Clientes</a>
+          <a href="#financeiro"><span aria-hidden="true">▥</span> Financeiro</a>
+          <a href="#configuracoes"><span aria-hidden="true">⚙</span> Configurações</a>
+        </nav>
 
-    <div class="resumo-grid">
-      <div class="resumo-card">
-        <span>Total</span>
-        <strong id="totalHorarios">0</strong>
-      </div>
-      <div class="resumo-card livre-card">
-        <span>Vagas</span>
-        <strong id="totalLivres">0</strong>
-      </div>
-      <div class="resumo-card ocupado-card">
-        <span>Marcados</span>
-        <strong id="totalOcupados">0</strong>
-      </div>
-    </div>
-
-    <div class="admin-layout">
-      <!-- ADICIONAR -->
-      <div class="card form-card">
-        <h3>Novo horário</h3>
-        <p class="card-text">Cadastre uma vaga livre ou um cliente já marcado.</p>
-
-        <div class="admin-agenda">
-          <div class="form-group">
-            <button type="button" class="btn btn-secundario" id="btnToggleCalendario" style="margin-top: 5px; margin-bottom: 10px;">📅 Abrir Calendário</button>
-            <input type="date" id="data" hidden>
-
-            <div class="admin-calendario hidden" id="calendarioContainer">
-              <div class="calendario-topo">
-                <button type="button" id="adminMesAnterior" class="btn-calendario">‹</button>
-                <strong id="adminMesAtual">Carregando</strong>
-                <button type="button" id="adminProximoMes" class="btn-calendario">›</button>
-              </div>
-
-              <div class="legenda">
-                <span><i class="dot vagas"></i> Vagas</span>
-                <span><i class="dot ocupado"></i> Marcado</span>
-                <span><i class="dot sem-agenda"></i> Sem agenda</span>
-                <span><i class="dot passado"></i> Passou</span>
-              </div>
-
-              <div class="dias-semana">
-                <span>Dom</span>
-                <span>Seg</span>
-                <span>Ter</span>
-                <span>Qua</span>
-                <span>Qui</span>
-                <span>Sex</span>
-                <span>Sáb</span>
-              </div>
-
-              <div id="adminCalendarioDias" class="calendario-dias"></div>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label>Status do Horário</label>
-            <select id="statusHorario">
-              <option value="ocupado">Cliente marcado</option>
-              <option value="livre">Vaga livre</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label>Barbeiro Responsável</label>
-            <select id="barbeiro">
-              <option value="">Selecione o barbeiro</option>
-              <option value="Isac">Isac</option>
-              <option value="Carlos">Carlos</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label>📅 Selecione a data</label>
-            <div class="date-time-field">
-              <div class="time-input-wrapper">
-                <span class="icon-clock">🕒</span>
-                <input type="time" id="hora" disabled>
-              </div>
-              <span id="textoHora">Escolha uma data primeiro</span>
-            </div>
-            <p id="dataEscolhida" class="data-escolhida">Nenhuma data selecionada.</p>
-          </div>
-
-          <div class="form-group">
-            <label>⏰ Selecione Horários</label>
-            <div class="gerador-horarios">
-              <input type="time" id="horaInicio" aria-label="Hora inicial">
-              <input type="time" id="horaFim" aria-label="Hora final">
-              <select id="intervaloHorarios" aria-label="Intervalo entre horários">
-                <option value="30">30 min</option>
-                <option value="15">15 min</option>
-                <option value="45">45 min</option>
-                <option value="60">60 min</option>
-              </select>
-            </div>
-            <div class="lote-actions">
-              <button type="button" class="btn btn-secundario" id="btnGerarLote">Gerar horários</button>
-              <button type="button" class="btn btn-secundario" id="btnLimparLote">Limpar lista</button>
-            </div>
-            <small>Preencha início e fim para gerar vagas automaticamente.</small>
-            <textarea id="horariosLote" placeholder="Ex: 09:00, 09:30, 10:00"></textarea>
-            <div id="previewLote" class="preview-lote">Os horários gerados aparecerão aqui.</div>
-            <small>Ou digite horários separados por vírgula.</small>
-          </div>
+        <div class="sidebar-footer">
+          <button class="nav-logout" onclick="logout()">Sair</button>
         </div>
+      </aside>
 
-        <div id="dadosCliente">
-          <div class="form-group">
-            <label>Nome do cliente</label>
-            <input type="text" id="nome" placeholder="Nome do cliente">
-          </div>
+      <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
-          <div class="form-group">
-            <label>Telefone</label>
-            <input type="tel" id="telefone" placeholder="Telefone do cliente">
-          </div>
+      <div class="admin-main">
+        <!-- TOPO -->
+        <div class="header admin-topo" id="dashboard">
+          <button class="menu-toggle" id="adminMenuToggle" type="button" aria-label="Abrir menu" aria-expanded="false">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
 
-          <div class="form-group">
-            <label>Serviço</label>
-            <select id="servico">
-              <option value="">Escolha o serviço</option>
-              <option>Corte</option>
-              <option>Barba</option>
-              <option>Corte + Barba</option>
-              <option>Sobrancelha</option>
-            </select>
-          </div>
-        </div>
-
-        <button class="btn" id="btnSalvarHorario" onclick="adicionarHorario()">Salvar horário</button>
-        <button class="btn btn-secundario hidden" id="btnCancelarEdicao" onclick="cancelarEdicao()">Cancelar edição</button>
-
-        <p id="msgAdmin" class="msg"></p>
-      </div>
-
-      <!-- LISTA -->
-      <div class="lista-box card">
-        <div class="lista-header">
           <div>
-            <h3>Horários cadastrados</h3>
-            <p id="resumoFiltroLista" class="card-text">Filtre por data, barbeiro, nome ou serviço.</p>
+            <span class="eyebrow">Administrador Isac</span>
+            <h1>Painel da Barbearia</h1>
+            <p class="topo-subtitulo">Gerencie seus agendamentos, serviços e horários.</p>
           </div>
-          <div class="lista-controles">
-            <select id="filtroBarbeiroLista" aria-label="Filtrar por barbeiro">
-              <option value="todos">Todos os Barbeiros</option>
-              <option value="Isac">Isac</option>
-              <option value="Carlos">Carlos</option>
-            </select>
-            <input type="search" id="filtroHorarios" placeholder="Buscar">
-            <button class="btn btn-delete btn-excluir-tudo" onclick="excluirTodos()">Excluir Tudo</button>
+
+          <div class="header-acoes">
+            <span class="data-hoje">Hoje, 22 de abril de 2025</span>
+            <button class="btn btn-voltar-topo" onclick="window.location.href='index.html'">Voltar ao Site</button>
+            <button class="btn logout" onclick="logout()">Sair</button>
           </div>
         </div>
 
-        <div class="filtros-rapidos" aria-label="Filtros rápidos">
-          <button type="button" class="ativo" data-filtro-status="todos">Todos</button>
-          <button type="button" data-filtro-status="livre">Livres</button>
-          <button type="button" data-filtro-status="ocupado">Marcados</button>
+        <div class="resumo-grid painel-view" id="indicadores" data-painel-section="dashboard">
+          <div class="resumo-card">
+            <span>Total de agendamentos</span>
+            <strong id="totalHorarios">0</strong>
+            <small>↑ 0% em relação a ontem</small>
+          </div>
+          <div class="resumo-card livre-card">
+            <span>Vagas disponíveis</span>
+            <strong id="totalLivres">0</strong>
+            <small>↑ 0% em relação a ontem</small>
+          </div>
+          <div class="resumo-card ocupado-card">
+            <span>Marcados</span>
+            <strong id="totalOcupados">0</strong>
+            <small>↑ 0% em relação a ontem</small>
+          </div>
         </div>
 
-        <ul id="lista"></ul>
+        <div class="admin-layout">
+          <!-- ADICIONAR -->
+          <div class="card form-card painel-view" id="horarios" data-painel-section="horarios">
+            <h3>Novo horário</h3>
+            <p class="card-text">Cadastre uma vaga livre ou um cliente já marcado.</p>
+
+            <div class="config-item config-item-form bloqueio-padrao-card">
+              <div>
+                <strong>Bloqueio padrão diário</strong>
+                <span>Use para almoço ou pausa fixa em todos os dias.</span>
+              </div>
+
+              <form class="bloqueio-padrao-form" id="formBloqueioPadrao">
+                <label class="check-row">
+                  <input type="checkbox" id="bloqueioPadraoAtivo">
+                  <span>Ativar bloqueio</span>
+                </label>
+
+                <div class="bloqueio-horarios">
+                  <div class="form-group">
+                    <label>Início</label>
+                    <input type="time" id="bloqueioPadraoInicio" value="12:00">
+                  </div>
+                  <div class="form-group">
+                    <label>Fim</label>
+                    <input type="time" id="bloqueioPadraoFim" value="14:00">
+                  </div>
+                </div>
+
+                <button type="submit" class="btn">Salvar bloqueio padrão</button>
+                <p id="msgBloqueioPadrao" class="msg"></p>
+              </form>
+            </div>
+
+            <div class="admin-agenda">
+              <div class="form-group">
+                <button type="button" class="btn btn-secundario btn-calendario-toggle" id="btnToggleCalendario">Fechar Calendário</button>
+                <input type="date" id="data" hidden>
+
+                <div class="admin-calendario" id="calendarioContainer">
+                  <div class="calendario-topo">
+                    <button type="button" id="adminMesAnterior" class="btn-calendario">‹</button>
+                    <strong id="adminMesAtual">Carregando</strong>
+                    <button type="button" id="adminProximoMes" class="btn-calendario">›</button>
+                  </div>
+
+                  <div class="legenda">
+                    <span><i class="dot vagas"></i> Livre</span>
+                    <span><i class="dot poucas"></i> Marcado/Poucas vagas</span>
+                    <span><i class="dot ocupado"></i> Lotado</span>
+                    <span><i class="dot sem-agenda"></i> Indisponível</span>
+                  </div>
+
+                  <div class="dias-semana">
+                    <span>Dom</span>
+                    <span>Seg</span>
+                    <span>Ter</span>
+                    <span>Qua</span>
+                    <span>Qui</span>
+                    <span>Sex</span>
+                    <span>Sáb</span>
+                  </div>
+
+                  <div id="adminCalendarioDias" class="calendario-dias"></div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Status do Horário</label>
+                <select id="statusHorario">
+                  <option value="ocupado">Cliente marcado</option>
+                  <option value="livre">Vaga livre</option>
+                  <option value="bloqueado">Indisponível</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Barbeiro Responsável</label>
+                <select id="barbeiro">
+                  <option value="">Selecione o barbeiro</option>
+                  <option value="Isac">Isac</option>
+                  <option value="Carlos">Carlos</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Selecione a data</label>
+                <div class="date-time-field">
+                  <input type="time" id="hora" disabled>
+                  <span id="textoHora">Escolha uma data primeiro</span>
+                </div>
+                <p id="dataEscolhida" class="data-escolhida">Nenhuma data selecionada.</p>
+                <button type="button" class="btn btn-secundario btn-bloquear-dia" id="btnBloquearDia">Bloquear dia selecionado</button>
+              </div>
+
+              <div class="form-group">
+                <label>Selecione Horários</label>
+                <div class="gerador-horarios">
+                  <input type="time" id="horaInicio" aria-label="Hora inicial">
+                  <input type="time" id="horaFim" aria-label="Hora final">
+                  <select id="intervaloHorarios" aria-label="Intervalo entre horários">
+                    <option value="30">30 min</option>
+                    <option value="15">15 min</option>
+                    <option value="45">45 min</option>
+                    <option value="60">60 min</option>
+                  </select>
+                </div>
+                <div class="lote-actions">
+                  <button type="button" class="btn btn-secundario" id="btnGerarLote">Gerar horários</button>
+                  <button type="button" class="btn btn-secundario" id="btnLimparLote">Limpar lista</button>
+                </div>
+                <small>Preencha início e fim para gerar vagas automaticamente.</small>
+                <textarea id="horariosLote" placeholder="Ex: 09:00, 09:30, 10:00"></textarea>
+                <div id="previewLote" class="preview-lote">Os horários gerados aparecerão aqui.</div>
+                <small>Ou digite horários separados por vírgula.</small>
+              </div>
+            </div>
+
+            <div id="dadosCliente">
+              <div class="form-group">
+                <label>Nome do cliente</label>
+                <input type="text" id="nome" placeholder="Nome do cliente">
+              </div>
+
+              <div class="form-group">
+                <label>Telefone</label>
+                <input type="tel" id="telefone" placeholder="Telefone do cliente">
+              </div>
+
+              <div class="form-group">
+                <label>Serviço</label>
+                <select id="servico">
+                  <option value="">Escolha o serviço</option>
+                  <option>Corte</option>
+                  <option>Barba</option>
+                  <option>Corte + Barba</option>
+                  <option>Sobrancelha</option>
+                </select>
+              </div>
+            </div>
+
+            <button class="btn" id="btnSalvarHorario" onclick="adicionarHorario()">Salvar horário</button>
+            <button class="btn btn-secundario hidden" id="btnCancelarEdicao" onclick="cancelarEdicao()">Cancelar edição</button>
+
+            <p id="msgAdmin" class="msg"></p>
+          </div>
+
+          <!-- LISTA -->
+          <div class="lista-box card painel-view" id="agendamentos" data-painel-section="agendamentos">
+            <div class="lista-header">
+              <div>
+                <h3>Agendamentos</h3>
+                <p id="resumoFiltroLista" class="card-text">Veja os dias agendados, serviço, cliente e contato.</p>
+              </div>
+              <div class="lista-controles">
+                <select id="filtroBarbeiroLista" aria-label="Filtrar por barbeiro">
+                  <option value="todos">Todos os Barbeiros</option>
+                  <option value="Isac">Isac</option>
+                  <option value="Carlos">Carlos</option>
+                </select>
+                <input type="search" id="filtroHorarios" placeholder="Buscar...">
+                <button class="btn btn-delete btn-excluir-tudo" onclick="excluirTodos()">Excluir Tudo</button>
+              </div>
+            </div>
+
+            <div class="filtros-rapidos" aria-label="Filtros rápidos">
+              <button type="button" class="ativo" data-filtro-status="todos">Todos</button>
+              <button type="button" data-filtro-status="ocupado">Marcados</button>
+            </div>
+
+            <div class="lista-table-head" aria-hidden="true">
+              <span>Data</span>
+              <span>Horário</span>
+              <span>Cliente</span>
+              <span>Serviço</span>
+              <span>Barbeiro</span>
+              <span>Status</span>
+              <span>Ações</span>
+            </div>
+            <ul id="lista"></ul>
+          </div>
+        </div>
+
+        <div class="painel-sections">
+          <section class="card painel-card painel-view" id="servicos" data-painel-section="servicos">
+            <div class="section-header">
+              <div>
+                <h3>Serviços</h3>
+                <p class="card-text">Veja os serviços existentes e cadastre novos tipos de serviço.</p>
+              </div>
+            </div>
+
+            <form class="servico-form" id="formServico">
+              <div class="form-group">
+                <label>Nome do serviço</label>
+                <input type="text" id="novoServicoNome" placeholder="Ex: Corte degradê">
+              </div>
+              <div class="form-group">
+                <label>Preço</label>
+                <input type="number" id="novoServicoPreco" placeholder="Ex: 35" min="0" step="0.01">
+              </div>
+              <div class="form-group">
+                <label>Duração</label>
+                <input type="number" id="novoServicoDuracao" placeholder="Minutos" min="5" step="5">
+              </div>
+              <button type="submit" class="btn" id="btnSalvarServico">Adicionar serviço</button>
+              <button type="button" class="btn btn-secundario hidden" id="btnCancelarServico">Cancelar edição</button>
+            </form>
+
+            <div id="listaServicos" class="servicos-lista"></div>
+          </section>
+
+          <section class="card painel-card painel-view" id="financeiro" data-painel-section="financeiro">
+            <div class="section-header">
+              <div>
+                <h3>Financeiro</h3>
+                <p class="card-text">Acompanhe o lucro estimado dos serviços marcados.</p>
+              </div>
+            </div>
+
+            <div class="financeiro-grid">
+              <div class="financeiro-card">
+                <span>Lucro total</span>
+                <strong id="lucroTotal">R$ 0,00</strong>
+              </div>
+              <div class="financeiro-card">
+                <span>Serviços marcados</span>
+                <strong id="totalServicosPagos">0</strong>
+              </div>
+              <div class="financeiro-card">
+                <span>Ticket médio</span>
+                <strong id="ticketMedio">R$ 0,00</strong>
+              </div>
+            </div>
+
+            <div id="listaFinanceiro" class="financeiro-lista"></div>
+          </section>
+
+          <section class="card painel-card painel-view" id="clientes" data-painel-section="clientes">
+            <div class="section-header">
+              <div>
+                <h3>Clientes</h3>
+                <p class="card-text">Veja os clientes que possuem agendamento marcado.</p>
+              </div>
+            </div>
+
+            <div id="listaClientes" class="clientes-lista"></div>
+          </section>
+
+          <section class="card painel-card painel-view" id="configuracoes" data-painel-section="configuracoes">
+            <div class="section-header">
+              <div>
+                <h3>Configurações</h3>
+                <p class="card-text">Atalhos rápidos para operação do painel.</p>
+              </div>
+            </div>
+
+            <div class="config-grid">
+              <div class="config-item">
+                <strong>Administrador</strong>
+                <span>Isac</span>
+              </div>
+              <div class="config-item">
+                <strong>Barbearia</strong>
+                <span>Barbearia Abner</span>
+              </div>
+              <div class="config-item">
+                <strong>Fluxo</strong>
+                <span>Cadastre serviços, crie horários e acompanhe agendamentos.</span>
+              </div>
+            </div>
+          </section>
+        </div>
       </div>
+
+      <nav class="bottom-nav" aria-label="Navegação principal mobile">
+        <a class="active" href="#dashboard"><span>◆</span> Painel</a>
+        <a href="#agendamentos"><span>□</span> Agendamentos</a>
+        <a href="#servicos"><span>✂</span> Serviços</a>
+        <a href="#financeiro"><span>▥</span> Financeiro</a>
+      </nav>
     </div>
 
   </section>
