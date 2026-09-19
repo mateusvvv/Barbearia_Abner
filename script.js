@@ -24,6 +24,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let horariosBrutos = []; // Cache dos dados do Firebase
 
+  function horarioAindaPodeSerAgendado(data, hora) {
+    if (!data || !hora) return false;
+    return new Date(`${data}T${hora}`) > new Date();
+  }
+
   // 🔥 FIREBASE LISTENER
   if (calendario && horariosContainer) {
     onValue(ref(db, "horarios"), (snapshot) => {
@@ -45,9 +50,17 @@ document.addEventListener("DOMContentLoaded", () => {
       horariosContainer.innerHTML = "";
 
       // Filtra os dados de acordo com o barbeiro selecionado
-      const dados = horariosBrutos.filter(h => 
-        barbeiroAtivo === "todos" || h.barber === barbeiroAtivo
-      );
+      const mapaHorarios = new Map();
+
+      horariosBrutos
+        .filter(h => barbeiroAtivo === "todos" || h.barber === barbeiroAtivo)
+        .filter(h => h.status !== "cancelado")
+        .forEach((h) => {
+          mapaHorarios.set(`${h.data}|${h.hora}|${h.barber || ""}`, h);
+        });
+
+      const dados = [...mapaHorarios.values()]
+        .filter(h => horarioAindaPodeSerAgendado(h.data, h.hora));
 
       const dias = {};
 
@@ -66,7 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const horariosDia = dias[data];
 
-        const ocupados = horariosDia.filter(h => h.status === "ocupado");
+        const ocupados = horariosDia.filter(h => h.status !== "livre");
 
         diaDiv.classList.add(ocupados.length >= horariosDia.length && horariosDia.length > 0 ? "ocupado" : "livre");
 
@@ -96,7 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const div = document.createElement("div");
       div.classList.add("horario");
 
-      div.classList.add(h.status === "ocupado" ? "ocupado" : "livre");
+      div.classList.add(h.status === "livre" ? "livre" : "ocupado");
       if (h.barber) div.classList.add(h.barber.toLowerCase());
       
       // Exibe a hora e o barbeiro
@@ -104,7 +117,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const labelBarbeiro = h.barber ? `<span class="barber-tag ${barberClass}">Barbeiro: ${h.barber}</span>` : "";
       div.innerHTML = `<strong>${h.hora}</strong> ${labelBarbeiro}`;
 
-      if (h.status !== "ocupado") {
+      if (h.status === "livre") {
         div.addEventListener("click", () => {
 
           document.querySelectorAll(".horario")
@@ -164,7 +177,7 @@ document.addEventListener("DOMContentLoaded", () => {
           servico,
           data,
           hora,
-          status: "ocupado",
+          status: "solicitado",
           barber: barbeiro // Salva o barbeiro junto com o agendamento
         });
 

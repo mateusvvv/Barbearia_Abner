@@ -16,7 +16,7 @@
 <main class="container">
 
   <!-- 🔐 LOGIN -->
-  <section id="login" class="card">
+  <section id="login" class="card hidden">
     <h2>🔐 Login Admin</h2>
 
     <div class="form-group">
@@ -49,7 +49,6 @@
           <a href="#horarios"><span aria-hidden="true">○</span> Horários</a>
           <a href="#clientes"><span aria-hidden="true">◇</span> Clientes</a>
           <a href="#financeiro"><span aria-hidden="true">▥</span> Financeiro</a>
-          <a href="#configuracoes"><span aria-hidden="true">⚙</span> Configurações</a>
         </nav>
 
         <div class="sidebar-footer">
@@ -83,7 +82,7 @@
 
         <div class="resumo-grid painel-view" id="indicadores" data-painel-section="dashboard">
           <div class="resumo-card">
-            <span>Total de agendamentos</span>
+            <span>Solicitações pendentes</span>
             <strong id="totalHorarios">0</strong>
             <small>↑ 0% em relação a ontem</small>
           </div>
@@ -93,7 +92,7 @@
             <small>↑ 0% em relação a ontem</small>
           </div>
           <div class="resumo-card ocupado-card">
-            <span>Marcados</span>
+            <span>Confirmados</span>
             <strong id="totalOcupados">0</strong>
             <small>↑ 0% em relação a ontem</small>
           </div>
@@ -101,14 +100,18 @@
 
         <div class="admin-layout">
           <!-- ADICIONAR -->
-          <div class="card form-card painel-view" id="horarios" data-painel-section="horarios">
-            <h3>Novo horário</h3>
-            <p class="card-text">Cadastre uma vaga livre ou um cliente já marcado.</p>
+          <div class="card form-card horarios-panel painel-view" id="horarios" data-painel-section="horarios">
+            <div class="section-header horarios-header">
+              <div>
+                <h3>Horários</h3>
+                <p class="card-text">Visualize os dias no calendário e configure os períodos fixos sem atendimento.</p>
+              </div>
+            </div>
 
             <div class="config-item config-item-form bloqueio-padrao-card">
               <div>
                 <strong>Bloqueio padrão diário</strong>
-                <span>Use para almoço ou pausa fixa em todos os dias.</span>
+                <span>Defina horários em que a barbearia não atende, como almoço ou pausa fixa.</span>
               </div>
 
               <form class="bloqueio-padrao-form" id="formBloqueioPadrao">
@@ -117,25 +120,28 @@
                   <span>Ativar bloqueio</span>
                 </label>
 
-                <div class="bloqueio-horarios">
-                  <div class="form-group">
-                    <label>Início</label>
-                    <input type="time" id="bloqueioPadraoInicio" value="12:00">
-                  </div>
-                  <div class="form-group">
-                    <label>Fim</label>
-                    <input type="time" id="bloqueioPadraoFim" value="14:00">
+                <div class="bloqueio-horarios" id="bloqueioPadraoIntervalos">
+                  <div class="bloqueio-intervalo">
+                    <div class="form-group">
+                      <label>Início</label>
+                      <input type="time" class="bloqueio-padrao-inicio" value="12:00">
+                    </div>
+                    <div class="form-group">
+                      <label>Fim</label>
+                      <input type="time" class="bloqueio-padrao-fim" value="14:00">
+                    </div>
+                    <button type="button" class="btn-remover-bloqueio" aria-label="Remover bloqueio">×</button>
                   </div>
                 </div>
 
+                <button type="button" class="btn btn-secundario btn-add-bloqueio" id="btnAdicionarBloqueioPadrao">+ Adicionar bloqueio</button>
                 <button type="submit" class="btn">Salvar bloqueio padrão</button>
                 <p id="msgBloqueioPadrao" class="msg"></p>
               </form>
             </div>
 
             <div class="admin-agenda">
-              <div class="form-group">
-                <button type="button" class="btn btn-secundario btn-calendario-toggle" id="btnToggleCalendario">Fechar Calendário</button>
+              <div class="form-group calendario-grupo">
                 <input type="date" id="data" hidden>
 
                 <div class="admin-calendario" id="calendarioContainer">
@@ -147,7 +153,8 @@
 
                   <div class="legenda">
                     <span><i class="dot vagas"></i> Livre</span>
-                    <span><i class="dot poucas"></i> Marcado/Poucas vagas</span>
+                    <span><i class="dot solicitado"></i> Solicitado</span>
+                    <span><i class="dot poucas"></i> Confirmado</span>
                     <span><i class="dot ocupado"></i> Lotado</span>
                     <span><i class="dot sem-agenda"></i> Indisponível</span>
                   </div>
@@ -165,71 +172,35 @@
                   <div id="adminCalendarioDias" class="calendario-dias"></div>
                 </div>
               </div>
-
-              <div class="form-group">
-                <label>Status do Horário</label>
-                <select id="statusHorario">
-                  <option value="ocupado">Cliente marcado</option>
-                  <option value="livre">Vaga livre</option>
-                  <option value="bloqueado">Indisponível</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label>Barbeiro Responsável</label>
-                <select id="barbeiro">
-                  <option value="">Selecione o barbeiro</option>
-                  <option value="Isac">Isac</option>
-                  <option value="Carlos">Carlos</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label>Selecione a data</label>
-                <div class="date-time-field">
-                  <input type="time" id="hora" disabled>
-                  <span id="textoHora">Escolha uma data primeiro</span>
-                </div>
-                <p id="dataEscolhida" class="data-escolhida">Nenhuma data selecionada.</p>
-                <button type="button" class="btn btn-secundario btn-bloquear-dia" id="btnBloquearDia">Bloquear dia selecionado</button>
-              </div>
-
-              <div class="form-group">
-                <label>Selecione Horários</label>
-                <div class="gerador-horarios">
-                  <input type="time" id="horaInicio" aria-label="Hora inicial">
-                  <input type="time" id="horaFim" aria-label="Hora final">
-                  <select id="intervaloHorarios" aria-label="Intervalo entre horários">
-                    <option value="30">30 min</option>
-                    <option value="15">15 min</option>
-                    <option value="45">45 min</option>
-                    <option value="60">60 min</option>
-                  </select>
-                </div>
-                <div class="lote-actions">
-                  <button type="button" class="btn btn-secundario" id="btnGerarLote">Gerar horários</button>
-                  <button type="button" class="btn btn-secundario" id="btnLimparLote">Limpar lista</button>
-                </div>
-                <small>Preencha início e fim para gerar vagas automaticamente.</small>
-                <textarea id="horariosLote" placeholder="Ex: 09:00, 09:30, 10:00"></textarea>
-                <div id="previewLote" class="preview-lote">Os horários gerados aparecerão aqui.</div>
-                <small>Ou digite horários separados por vírgula.</small>
-              </div>
             </div>
 
-            <div id="dadosCliente">
-              <div class="form-group">
-                <label>Nome do cliente</label>
-                <input type="text" id="nome" placeholder="Nome do cliente">
-              </div>
-
-              <div class="form-group">
-                <label>Telefone</label>
-                <input type="tel" id="telefone" placeholder="Telefone do cliente">
-              </div>
-
-              <div class="form-group">
-                <label>Serviço</label>
+            <div class="admin-compat hidden" aria-hidden="true">
+              <select id="statusHorario">
+                <option value="ocupado">Confirmado</option>
+                <option value="livre">Vaga livre</option>
+                <option value="bloqueado">Indisponível</option>
+              </select>
+              <select id="barbeiro">
+                <option value="">Selecione o barbeiro</option>
+                <option value="Isac">Isac</option>
+                <option value="Carlos">Carlos</option>
+              </select>
+              <input type="time" id="hora" disabled>
+              <span id="textoHora">Escolha uma data primeiro</span>
+              <p id="dataEscolhida" class="data-escolhida">Nenhuma data selecionada.</p>
+              <input type="time" id="horaInicio" aria-label="Hora inicial">
+              <input type="time" id="horaFim" aria-label="Hora final">
+              <select id="intervaloHorarios" aria-label="Intervalo entre horários">
+                <option value="30">30 min</option>
+                <option value="15">15 min</option>
+                <option value="45">45 min</option>
+                <option value="60">60 min</option>
+              </select>
+              <textarea id="horariosLote"></textarea>
+              <div id="previewLote"></div>
+              <div id="dadosCliente">
+                <input type="text" id="nome">
+                <input type="tel" id="telefone">
                 <select id="servico">
                   <option value="">Escolha o serviço</option>
                   <option>Corte</option>
@@ -238,10 +209,12 @@
                   <option>Sobrancelha</option>
                 </select>
               </div>
+              <button type="button" id="btnGerarLote">Gerar horários</button>
+              <button type="button" id="btnLimparLote">Limpar lista</button>
+              <button type="button" id="btnBloquearDia">Bloquear dia selecionado</button>
+              <button type="button" id="btnSalvarHorario" onclick="adicionarHorario()">Salvar horário</button>
+              <button type="button" id="btnCancelarEdicao" onclick="cancelarEdicao()">Cancelar edição</button>
             </div>
-
-            <button class="btn" id="btnSalvarHorario" onclick="adicionarHorario()">Salvar horário</button>
-            <button class="btn btn-secundario hidden" id="btnCancelarEdicao" onclick="cancelarEdicao()">Cancelar edição</button>
 
             <p id="msgAdmin" class="msg"></p>
           </div>
@@ -266,7 +239,10 @@
 
             <div class="filtros-rapidos" aria-label="Filtros rápidos">
               <button type="button" class="ativo" data-filtro-status="todos">Todos</button>
-              <button type="button" data-filtro-status="ocupado">Marcados</button>
+              <button type="button" data-filtro-status="solicitado">Solicitados</button>
+              <button type="button" data-filtro-status="ocupado">Confirmados</button>
+              <button type="button" data-filtro-status="finalizado">Finalizados</button>
+              <button type="button" data-filtro-status="cancelado">Cancelados</button>
             </div>
 
             <div class="lista-table-head" aria-hidden="true">
@@ -280,6 +256,71 @@
             </div>
             <ul id="lista"></ul>
           </div>
+
+          <dialog class="modal-agendamento" id="modalEditarAgendamento">
+            <form id="formEditarAgendamento" class="modal-agendamento-card" method="dialog">
+              <div class="section-header">
+                <div>
+                  <h3>Editar agendamento</h3>
+                  <p class="card-text">Altere os dados do horário confirmado.</p>
+                </div>
+                <button type="button" class="modal-fechar" id="btnFecharModalAgendamento" aria-label="Fechar">×</button>
+              </div>
+
+              <input type="hidden" id="editarAgendamentoId">
+
+              <div class="modal-agendamento-grid">
+                <div class="form-group">
+                  <label>Data</label>
+                  <input type="date" id="editarAgendamentoData" required>
+                </div>
+                <div class="form-group">
+                  <label>Horário</label>
+                  <input type="time" id="editarAgendamentoHora" required>
+                </div>
+                <div class="form-group">
+                  <label>Barbeiro</label>
+                  <select id="editarAgendamentoBarbeiro" required>
+                    <option value="">Selecione</option>
+                    <option value="Isac">Isac</option>
+                    <option value="Carlos">Carlos</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Cliente</label>
+                  <input type="text" id="editarAgendamentoNome" required>
+                </div>
+                <div class="form-group">
+                  <label>Telefone</label>
+                  <input type="tel" id="editarAgendamentoTelefone" required>
+                </div>
+                <div class="form-group">
+                  <label>Serviço</label>
+                  <div class="servico-modal-picker">
+                    <div id="editarAgendamentoServicosSelecionados" class="servicos-selecionados"></div>
+                    <div class="servico-add-row">
+                      <select id="editarAgendamentoServico">
+                        <option value="">Escolha o serviço</option>
+                      </select>
+                      <button type="button" id="btnAdicionarServicoAgendamento" class="btn-add-servico" aria-label="Adicionar serviço">+</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <p id="msgEditarAgendamento" class="msg"></p>
+
+              <div class="modal-acoes-perigo">
+                <button type="button" class="btn btn-cancelar-modal" id="btnCancelarHorarioModal">Cancelar horário</button>
+                <button type="button" class="btn btn-delete btn-excluir-modal" id="btnExcluirRegistroModal">Excluir registro</button>
+              </div>
+
+              <div class="modal-acoes">
+                <button type="button" class="btn btn-secundario" id="btnCancelarModalAgendamento">Cancelar</button>
+                <button type="submit" class="btn">Salvar alterações</button>
+              </div>
+            </form>
+          </dialog>
         </div>
 
         <div class="painel-sections">
@@ -315,7 +356,7 @@
             <div class="section-header">
               <div>
                 <h3>Financeiro</h3>
-                <p class="card-text">Acompanhe o lucro estimado dos serviços marcados.</p>
+                <p class="card-text">Acompanhe o lucro dos serviços finalizados.</p>
               </div>
             </div>
 
@@ -325,7 +366,7 @@
                 <strong id="lucroTotal">R$ 0,00</strong>
               </div>
               <div class="financeiro-card">
-                <span>Serviços marcados</span>
+                <span>Serviços finalizados</span>
                 <strong id="totalServicosPagos">0</strong>
               </div>
               <div class="financeiro-card">
@@ -348,29 +389,6 @@
             <div id="listaClientes" class="clientes-lista"></div>
           </section>
 
-          <section class="card painel-card painel-view" id="configuracoes" data-painel-section="configuracoes">
-            <div class="section-header">
-              <div>
-                <h3>Configurações</h3>
-                <p class="card-text">Atalhos rápidos para operação do painel.</p>
-              </div>
-            </div>
-
-            <div class="config-grid">
-              <div class="config-item">
-                <strong>Administrador</strong>
-                <span>Isac</span>
-              </div>
-              <div class="config-item">
-                <strong>Barbearia</strong>
-                <span>Barbearia Abner</span>
-              </div>
-              <div class="config-item">
-                <strong>Fluxo</strong>
-                <span>Cadastre serviços, crie horários e acompanhe agendamentos.</span>
-              </div>
-            </div>
-          </section>
         </div>
       </div>
 

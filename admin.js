@@ -64,9 +64,25 @@ const listaFinanceiro = document.getElementById("listaFinanceiro");
 const listaClientes = document.getElementById("listaClientes");
 const formBloqueioPadrao = document.getElementById("formBloqueioPadrao");
 const bloqueioPadraoAtivo = document.getElementById("bloqueioPadraoAtivo");
-const bloqueioPadraoInicio = document.getElementById("bloqueioPadraoInicio");
-const bloqueioPadraoFim = document.getElementById("bloqueioPadraoFim");
+const bloqueioPadraoIntervalos = document.getElementById("bloqueioPadraoIntervalos");
+const btnAdicionarBloqueioPadrao = document.getElementById("btnAdicionarBloqueioPadrao");
 const msgBloqueioPadrao = document.getElementById("msgBloqueioPadrao");
+const modalEditarAgendamento = document.getElementById("modalEditarAgendamento");
+const formEditarAgendamento = document.getElementById("formEditarAgendamento");
+const editarAgendamentoId = document.getElementById("editarAgendamentoId");
+const editarAgendamentoData = document.getElementById("editarAgendamentoData");
+const editarAgendamentoHora = document.getElementById("editarAgendamentoHora");
+const editarAgendamentoBarbeiro = document.getElementById("editarAgendamentoBarbeiro");
+const editarAgendamentoNome = document.getElementById("editarAgendamentoNome");
+const editarAgendamentoTelefone = document.getElementById("editarAgendamentoTelefone");
+const editarAgendamentoServico = document.getElementById("editarAgendamentoServico");
+const editarAgendamentoServicosSelecionados = document.getElementById("editarAgendamentoServicosSelecionados");
+const msgEditarAgendamento = document.getElementById("msgEditarAgendamento");
+const btnFecharModalAgendamento = document.getElementById("btnFecharModalAgendamento");
+const btnCancelarModalAgendamento = document.getElementById("btnCancelarModalAgendamento");
+const btnAdicionarServicoAgendamento = document.getElementById("btnAdicionarServicoAgendamento");
+const btnCancelarHorarioModal = document.getElementById("btnCancelarHorarioModal");
+const btnExcluirRegistroModal = document.getElementById("btnExcluirRegistroModal");
 let horariosCadastrados = [];
 let cancelarListenerHorarios = null;
 let cancelarListenerServicos = null;
@@ -74,8 +90,9 @@ let cancelarListenerConfiguracoes = null;
 let servicosCadastrados = [];
 let bloqueioPadrao = {
   ativo: false,
-  inicio: "12:00",
-  fim: "14:00"
+  intervalos: [
+    { inicio: "12:00", fim: "14:00" }
+  ]
 };
 let dataAtivaAdmin = "";
 let mesVisivelAdmin = new Date();
@@ -83,6 +100,7 @@ let filtroStatusAtual = "todos";
 let timerMensagemAdmin = null;
 let horarioEditandoId = null;
 let servicoEditandoId = null;
+let servicosEdicaoSelecionados = [];
 
 const servicosPadrao = [
   { id: "padrao-corte", nome: "Corte", preco: 30, duracao: 30, padrao: true },
@@ -103,7 +121,7 @@ const titulosSecoes = {
   },
   agendamentos: {
     titulo: "Agendamentos",
-    subtitulo: "Veja e organize os horários marcados."
+    subtitulo: "Confirme ou cancele as solicitações recebidas pelo site."
   },
   servicos: {
     titulo: "Serviços",
@@ -111,7 +129,7 @@ const titulosSecoes = {
   },
   horarios: {
     titulo: "Horários",
-    subtitulo: "Cadastre vagas livres ou clientes já marcados."
+    subtitulo: "Visualize o calendário e configure bloqueios fixos de atendimento."
   },
   clientes: {
     titulo: "Clientes",
@@ -119,11 +137,7 @@ const titulosSecoes = {
   },
   financeiro: {
     titulo: "Financeiro",
-    subtitulo: "Veja o lucro estimado dos serviços marcados."
-  },
-  configuracoes: {
-    titulo: "Configurações",
-    subtitulo: "Ajustes e informações rápidas do painel."
+    subtitulo: "Veja o lucro dos serviços finalizados."
   }
 };
 
@@ -133,8 +147,7 @@ const secoesPainel = new Set([
   "servicos",
   "horarios",
   "clientes",
-  "financeiro",
-  "configuracoes"
+  "financeiro"
 ]);
 
 function abrirSecaoPainel(secao) {
@@ -326,18 +339,72 @@ function horarioEstaNoPadrao(hora) {
     && minutos <= converterHoraParaMinutos(horaFechamentoPadrao);
 }
 
+function normalizarIntervalosBloqueio(dados = {}) {
+  const origem = Array.isArray(dados.intervalos) && dados.intervalos.length
+    ? dados.intervalos
+    : [{ inicio: dados.inicio || "12:00", fim: dados.fim || "14:00" }];
+
+  const intervalos = origem
+    .map((intervalo) => ({
+      inicio: intervalo?.inicio || "",
+      fim: intervalo?.fim || ""
+    }))
+    .filter((intervalo) => intervalo.inicio && intervalo.fim);
+
+  return intervalos.length ? intervalos : [{ inicio: "12:00", fim: "14:00" }];
+}
+
+function criarLinhaBloqueioPadrao(intervalo = { inicio: "12:00", fim: "14:00" }) {
+  const linha = document.createElement("div");
+  linha.className = "bloqueio-intervalo";
+  linha.innerHTML = `
+    <div class="form-group">
+      <label>Início</label>
+      <input type="time" class="bloqueio-padrao-inicio" value="${escaparHTML(intervalo.inicio)}">
+    </div>
+    <div class="form-group">
+      <label>Fim</label>
+      <input type="time" class="bloqueio-padrao-fim" value="${escaparHTML(intervalo.fim)}">
+    </div>
+    <button type="button" class="btn-remover-bloqueio" aria-label="Remover bloqueio">×</button>
+  `;
+  return linha;
+}
+
+function renderizarIntervalosBloqueioPadrao(intervalos) {
+  if (!bloqueioPadraoIntervalos) return;
+
+  bloqueioPadraoIntervalos.innerHTML = "";
+  normalizarIntervalosBloqueio({ intervalos }).forEach((intervalo) => {
+    bloqueioPadraoIntervalos.appendChild(criarLinhaBloqueioPadrao(intervalo));
+  });
+}
+
+function obterIntervalosBloqueioFormulario() {
+  if (!bloqueioPadraoIntervalos) return [];
+
+  return [...bloqueioPadraoIntervalos.querySelectorAll(".bloqueio-intervalo")]
+    .map((linha) => ({
+      inicio: linha.querySelector(".bloqueio-padrao-inicio")?.value || "",
+      fim: linha.querySelector(".bloqueio-padrao-fim")?.value || ""
+    }));
+}
+
 function horarioEstaNoBloqueioPadrao(hora) {
-  if (!bloqueioPadrao.ativo || !bloqueioPadrao.inicio || !bloqueioPadrao.fim || !hora) {
+  if (!bloqueioPadrao.ativo || !hora) {
     return false;
   }
 
   const minutoHorario = converterHoraParaMinutos(hora);
-  const minutoInicio = converterHoraParaMinutos(bloqueioPadrao.inicio);
-  const minutoFim = converterHoraParaMinutos(bloqueioPadrao.fim);
 
-  return minutoFim > minutoInicio
-    && minutoHorario >= minutoInicio
-    && minutoHorario < minutoFim;
+  return normalizarIntervalosBloqueio(bloqueioPadrao).some((intervalo) => {
+    const minutoInicio = converterHoraParaMinutos(intervalo.inicio);
+    const minutoFim = converterHoraParaMinutos(intervalo.fim);
+
+    return minutoFim > minutoInicio
+      && minutoHorario >= minutoInicio
+      && minutoHorario < minutoFim;
+  });
 }
 
 function criarHorariosPadraoDia(data) {
@@ -394,6 +461,8 @@ function combinarHorariosPadrao(data, dados = horariosCadastrados) {
       return;
     }
 
+    if (horario.status === "cancelado") return;
+
     const chave = chaveHorario(horario);
     mapa.set(chave, {
       ...horario,
@@ -409,7 +478,41 @@ function combinarHorariosPadrao(data, dados = horariosCadastrados) {
 }
 
 function obterDadosParaLista(dados = horariosCadastrados) {
-  return dados.filter(h => h.status === "ocupado" && !h.padrao && h.nome);
+  return dados.filter(h => ["solicitado", "ocupado", "finalizado", "cancelado"].includes(h.status) && !h.padrao && h.nome);
+}
+
+function obterInfoStatusHorario(status) {
+  const mapa = {
+    solicitado: {
+      texto: "Solicitado",
+      dot: "solicitado"
+    },
+    ocupado: {
+      texto: "Confirmado",
+      dot: "poucas"
+    },
+    finalizado: {
+      texto: "Finalizado",
+      dot: "finalizado"
+    },
+    cancelado: {
+      texto: "Cancelado",
+      dot: "cancelado"
+    },
+    livre: {
+      texto: "Livre",
+      dot: "livre"
+    },
+    bloqueado: {
+      texto: "Indisponível",
+      dot: "ocupado"
+    }
+  };
+
+  return mapa[status] || {
+    texto: "Marcado",
+    dot: "poucas"
+  };
 }
 
 function escaparHTML(valor) {
@@ -457,11 +560,99 @@ function obterValorHorario(horario) {
   return Number(obterServicoPorNome(horario.servico)?.preco || 0);
 }
 
+function obterServicosDoHorario(horario = {}) {
+  if (Array.isArray(horario.servicos) && horario.servicos.length) {
+    return horario.servicos
+      .map((servicoItem) => ({
+        nome: servicoItem.nome || servicoItem,
+        preco: Number(servicoItem.preco ?? obterServicoPorNome(servicoItem.nome || servicoItem)?.preco ?? 0)
+      }))
+      .filter((servicoItem) => servicoItem.nome);
+  }
+
+  return String(horario.servico || "")
+    .split(",")
+    .map((nome) => nome.trim())
+    .filter(Boolean)
+    .map((nome) => ({
+      nome,
+      preco: Number(obterServicoPorNome(nome)?.preco || 0)
+    }));
+}
+
+function renderizarServicosEdicao() {
+  if (!editarAgendamentoServicosSelecionados) return;
+
+  editarAgendamentoServicosSelecionados.classList.toggle("vazio", servicosEdicaoSelecionados.length === 0);
+  editarAgendamentoServicosSelecionados.innerHTML = servicosEdicaoSelecionados.map((servicoItem, index) => {
+    return `
+      <span class="servico-chip">
+        ${escaparHTML(servicoItem.nome)}
+        <button type="button" onclick="removerServicoAgendamento(${index})" aria-label="Remover ${escaparHTML(servicoItem.nome)}">×</button>
+      </span>
+    `;
+  }).join("");
+}
+
+window.removerServicoAgendamento = function (index) {
+  servicosEdicaoSelecionados.splice(index, 1);
+  renderizarServicosEdicao();
+};
+
+function dataHoraJaPassou(data, hora) {
+  if (!data || !hora) return false;
+  return new Date(`${data}T${hora}`) <= new Date();
+}
+
+function existeConflitoAgendamento({ id, data, hora, barber }) {
+  return horariosCadastrados.some((horario) => {
+    return horario.id !== id
+      && horario.data === data
+      && horario.hora === hora
+      && (horario.barber || "") === barber
+      && ["solicitado", "ocupado", "bloqueado"].includes(horario.status);
+  });
+}
+
+async function liberarHorarioSeFuturo(horario) {
+  if (!horario?.data || !horario?.hora || !horario?.barber || dataHoraJaPassou(horario.data, horario.hora)) {
+    return;
+  }
+
+  const jaExisteLivre = horariosCadastrados.some((item) => {
+    return item.id !== horario.id
+      && item.data === horario.data
+      && item.hora === horario.hora
+      && (item.barber || "") === (horario.barber || "")
+      && item.status === "livre";
+  });
+
+  if (jaExisteLivre) return;
+
+  await push(ref(db, "horarios"), {
+    data: horario.data,
+    hora: horario.hora,
+    nome: null,
+    telefone: null,
+    servico: null,
+    valorServico: null,
+    status: "livre",
+    barber: horario.barber,
+    tipoBloqueio: null,
+    liberadoDe: horario.id,
+    criadoEm: new Date().toISOString()
+  });
+}
+
 function renderizarSelectServicos() {
   const selectServico = document.getElementById("servico");
   const valorAtual = selectServico.value;
+  const valorAtualModal = editarAgendamentoServico?.value || "";
 
   selectServico.innerHTML = '<option value="">Escolha o serviço</option>';
+  if (editarAgendamentoServico) {
+    editarAgendamentoServico.innerHTML = '<option value="">Escolha o serviço</option>';
+  }
 
   servicosCadastrados.forEach((servicoItem) => {
     const option = document.createElement("option");
@@ -470,9 +661,16 @@ function renderizarSelectServicos() {
       ? `${servicoItem.nome} - ${formatarMoeda(servicoItem.preco)}`
       : servicoItem.nome;
     selectServico.appendChild(option);
+
+    if (editarAgendamentoServico) {
+      editarAgendamentoServico.appendChild(option.cloneNode(true));
+    }
   });
 
   selectServico.value = valorAtual;
+  if (editarAgendamentoServico) {
+    editarAgendamentoServico.value = valorAtualModal;
+  }
 }
 
 function renderizarServicos() {
@@ -504,20 +702,20 @@ function renderizarServicos() {
 function renderizarFinanceiro(dados) {
   if (!lucroTotal || !listaFinanceiro) return;
 
-  const marcados = dados.filter(h => h.status === "ocupado");
-  const total = marcados.reduce((soma, horario) => soma + obterValorHorario(horario), 0);
-  const media = marcados.length ? total / marcados.length : 0;
+  const finalizados = dados.filter(h => h.status === "finalizado");
+  const total = finalizados.reduce((soma, horario) => soma + obterValorHorario(horario), 0);
+  const media = finalizados.length ? total / finalizados.length : 0;
 
   lucroTotal.textContent = formatarMoeda(total);
-  totalServicosPagos.textContent = marcados.length;
+  totalServicosPagos.textContent = finalizados.length;
   ticketMedio.textContent = formatarMoeda(media);
 
-  if (marcados.length === 0) {
-    listaFinanceiro.innerHTML = '<p class="empty-state">Nenhum serviço marcado para calcular lucro.</p>';
+  if (finalizados.length === 0) {
+    listaFinanceiro.innerHTML = '<p class="empty-state">Nenhum serviço finalizado para calcular lucro.</p>';
     return;
   }
 
-  listaFinanceiro.innerHTML = marcados.slice(0, 8).map((horario) => {
+  listaFinanceiro.innerHTML = finalizados.slice(0, 8).map((horario) => {
     return `
       <div class="financeiro-item">
         <div>
@@ -613,28 +811,44 @@ function carregarConfiguracoes() {
 
     bloqueioPadrao = {
       ativo: Boolean(dados.ativo),
-      inicio: dados.inicio || "12:00",
-      fim: dados.fim || "14:00"
+      intervalos: normalizarIntervalosBloqueio(dados)
     };
 
     if (bloqueioPadraoAtivo) bloqueioPadraoAtivo.checked = bloqueioPadrao.ativo;
-    if (bloqueioPadraoInicio) bloqueioPadraoInicio.value = bloqueioPadrao.inicio;
-    if (bloqueioPadraoFim) bloqueioPadraoFim.value = bloqueioPadrao.fim;
+    renderizarIntervalosBloqueioPadrao(bloqueioPadrao.intervalos);
 
     renderizarCalendarioAdmin();
     renderizarHorarios(horariosCadastrados);
   });
 }
 
+btnAdicionarBloqueioPadrao?.addEventListener("click", () => {
+  bloqueioPadraoIntervalos?.appendChild(criarLinhaBloqueioPadrao({ inicio: "12:00", fim: "14:00" }));
+});
+
+bloqueioPadraoIntervalos?.addEventListener("click", (event) => {
+  const botao = event.target.closest(".btn-remover-bloqueio");
+  if (!botao) return;
+
+  const linhas = bloqueioPadraoIntervalos.querySelectorAll(".bloqueio-intervalo");
+  if (linhas.length <= 1) return;
+
+  botao.closest(".bloqueio-intervalo")?.remove();
+});
+
 formBloqueioPadrao?.addEventListener("submit", async (event) => {
   event.preventDefault();
 
-  const inicio = bloqueioPadraoInicio.value;
-  const fim = bloqueioPadraoFim.value;
+  const intervalos = obterIntervalosBloqueioFormulario();
+  const intervalosValidos = intervalos.filter((intervalo) => {
+    return intervalo.inicio
+      && intervalo.fim
+      && converterHoraParaMinutos(intervalo.fim) > converterHoraParaMinutos(intervalo.inicio);
+  });
 
-  if (!inicio || !fim || converterHoraParaMinutos(fim) <= converterHoraParaMinutos(inicio)) {
+  if (intervalosValidos.length !== intervalos.length || intervalosValidos.length === 0) {
     if (msgBloqueioPadrao) {
-      msgBloqueioPadrao.textContent = "Informe um intervalo válido.";
+      msgBloqueioPadrao.textContent = "Informe apenas intervalos válidos.";
       msgBloqueioPadrao.style.color = "orange";
     }
     return;
@@ -642,8 +856,9 @@ formBloqueioPadrao?.addEventListener("submit", async (event) => {
 
   await update(ref(db, "configuracoes/bloqueioPadrao"), {
     ativo: Boolean(bloqueioPadraoAtivo.checked),
-    inicio,
-    fim
+    intervalos: intervalosValidos,
+    inicio: intervalosValidos[0].inicio,
+    fim: intervalosValidos[0].fim
   });
 
   if (msgBloqueioPadrao) {
@@ -781,6 +996,7 @@ function obterStatusDia(data) {
   const horariosDoDia = combinarHorariosPadrao(data);
   const livres = horariosDoDia.filter(h => h.status === "livre").length;
   const ocupados = horariosDoDia.filter(h => h.status === "ocupado").length;
+  const solicitados = horariosDoDia.filter(h => h.status === "solicitado").length;
   const bloqueados = horariosDoDia.filter(h => h.status === "bloqueado").length;
 
   if (horariosDoDia.length === 0) {
@@ -793,13 +1009,13 @@ function obterStatusDia(data) {
   if (livres > 0) {
     return {
       classe: "vagas",
-      texto: ocupados > 0
-        ? `${livres} vaga${livres > 1 ? "s" : ""} / ${ocupados} marc.`
+      texto: ocupados + solicitados > 0
+        ? `${livres} vaga${livres > 1 ? "s" : ""} / ${ocupados + solicitados} pend.`
         : `${livres} vaga${livres > 1 ? "s" : ""}`
     };
   }
 
-  if (bloqueados > 0 && ocupados === 0) {
+  if (bloqueados > 0 && ocupados === 0 && solicitados === 0) {
     return {
       classe: "sem-agenda",
       texto: "Bloqueado"
@@ -808,7 +1024,9 @@ function obterStatusDia(data) {
 
   return {
     classe: "ocupado",
-    texto: `${ocupados} marcado${ocupados > 1 ? "s" : ""}`
+    texto: solicitados > 0
+      ? `${solicitados} solicitado${solicitados > 1 ? "s" : ""}`
+      : `${ocupados} marcado${ocupados > 1 ? "s" : ""}`
   };
 }
 
@@ -862,7 +1080,6 @@ function selecionarDataAdmin(data) {
   dataAtivaAdmin = data;
   inputData.value = data;
   inputHora.disabled = false;
-  inputHora.focus();
   filtroStatusAtual = "todos";
   botoesFiltroStatus.forEach((item) => {
     item.classList.toggle("ativo", item.dataset.filtroStatus === "todos");
@@ -919,8 +1136,9 @@ function renderizarCalendarioAdmin() {
 function atualizarResumo(dados) {
   const livres = dados.filter(h => h.status === "livre").length;
   const ocupados = dados.filter(h => h.status === "ocupado").length;
+  const solicitados = dados.filter(h => h.status === "solicitado").length;
 
-  document.getElementById("totalHorarios").textContent = dados.length;
+  document.getElementById("totalHorarios").textContent = solicitados;
   document.getElementById("totalLivres").textContent = livres;
   document.getElementById("totalOcupados").textContent = ocupados;
 }
@@ -1257,10 +1475,11 @@ function renderizarHorarios(dados) {
   const termo = filtroHorarios.value.trim().toLowerCase();
   const barbeiroFiltro = filtroBarbeiroLista?.value || "todos";
   const dadosLista = obterDadosParaLista(dados);
+  const filtrarPorData = Boolean(dataAtivaAdmin && filtroStatusAtual === "todos");
 
   const filtrados = dadosLista.filter((h) => {
-    if (dataAtivaAdmin && h.data !== dataAtivaAdmin) return false;
-    if (filtroStatusAtual !== "todos" && filtroStatusAtual !== "ocupado") return false;
+    if (filtrarPorData && h.data !== dataAtivaAdmin) return false;
+    if (filtroStatusAtual !== "todos" && h.status !== filtroStatusAtual) return false;
     if (barbeiroFiltro !== "todos" && h.barber !== barbeiroFiltro) return false;
 
     const texto = `${h.data} ${h.hora || ""} ${h.nome || ""} ${h.servico || ""} ${h.telefone || ""} ${h.barber || ""}`.toLowerCase();
@@ -1268,25 +1487,26 @@ function renderizarHorarios(dados) {
   });
 
   lista.innerHTML = "";
-  resumoFiltroLista.textContent = dataAtivaAdmin
-    ? `Mostrando agendamentos reais de ${formatarData(dataAtivaAdmin)}.`
-    : "Filtre por data, barbeiro, nome ou serviço.";
+  resumoFiltroLista.textContent = filtroStatusAtual === "todos" && dataAtivaAdmin
+    ? `Mostrando solicitados, confirmados, finalizados e cancelados de ${formatarData(dataAtivaAdmin)}.`
+    : "Mostrando agendamentos do filtro selecionado.";
 
   if (filtrados.length === 0) {
-    lista.innerHTML = "<p class=\"empty-state\">Nenhum agendamento real encontrado.</p>";
+    lista.innerHTML = "<p class=\"empty-state\">Nenhuma solicitação ou agendamento encontrado.</p>";
     return;
   }
 
   filtrados.forEach((h) => {
     const dataFormatada = formatarData(h.data);
-    const status = h.status === "livre" ? "Livre" : h.status === "bloqueado" ? "Indisponível" : "Marcado";
-    const statusDot = h.status === "livre" ? "livre" : h.status === "bloqueado" ? "ocupado" : "poucas";
+    const statusInfo = obterInfoStatusHorario(h.status);
     const cliente = h.tipoBloqueio === "dia" ? "Dia bloqueado" : h.nome || "Vaga aberta";
     const servico = h.servico || "—";
     const barbeiroNome = h.barber || "—";
     const horaTexto = h.hora || "--:--";
     const bloqueioDia = h.tipoBloqueio === "dia";
-    const editarAcao = h.padrao
+    const editarAcao = h.status === "ocupado" && !h.padrao
+      ? `editarAgendamentoConfirmado('${h.id}')`
+      : h.padrao
       ? `editarHorarioPadrao('${h.data}', '${h.hora}', '${h.barber}')`
       : `editarHorario('${h.id}')`;
     const excluirAcao = h.padrao
@@ -1320,20 +1540,27 @@ function renderizarHorarios(dados) {
         </div>
         <div class="table-cell">
           <span class="cell-label">Status</span>
-          <span class="status-pill"><i class="status-dot ${statusDot}"></i>${status}</span>
+          <span class="status-pill"><i class="status-dot ${statusInfo.dot}"></i>${statusInfo.texto}</span>
         </div>
 
         <div class="item-acoes table-cell">
           <span class="cell-label">Ações</span>
           <div class="acoes-botoes">
             ${
+              h.status === "solicitado"
+                ? `<button class="btn-confirmar" title="Confirmar agendamento" aria-label="Confirmar agendamento" onclick="confirmarSolicitacao('${h.id}')">Confirmar</button>
+                   <button class="btn-cancelar" title="Cancelar solicitação" aria-label="Cancelar solicitação" onclick="cancelarSolicitacao('${h.id}')">Cancelar</button>`
+                : ""
+            }
+            ${
               h.status === "ocupado"
-                ? `<button class="btn-liberar" onclick="cancelar('${h.id}')">Liberar</button>`
+                ? `<button class="btn-finalizar" title="Finalizar serviço" aria-label="Finalizar serviço" onclick="finalizarAgendamento('${h.id}')">Finalizar</button>
+                   <button class="btn-cancelar" title="Cancelar e liberar horário" aria-label="Cancelar e liberar horário" onclick="cancelar('${h.id}')">Cancelar</button>`
                 : ""
             }
 
-            ${bloqueioDia ? "" : `<button class="btn-editar" onclick="${editarAcao}">Editar</button>`}
-            <button class="btn-delete" onclick="${excluirAcao}">${h.padrao ? "Bloquear" : "Excluir"}</button>
+            ${bloqueioDia || !["ocupado", "livre", "bloqueado"].includes(h.status) ? "" : `<button class="btn-editar" title="Editar horário" aria-label="Editar horário" onclick="${editarAcao}">Editar</button>`}
+            ${["solicitado", "cancelado"].includes(h.status) ? "" : `<button class="btn-delete" title="${h.padrao ? "Bloquear horário" : "Excluir registro"}" aria-label="${h.padrao ? "Bloquear horário" : "Excluir registro"}" onclick="${excluirAcao}">${h.padrao ? "Bloquear" : "Excluir"}</button>`}
           </div>
         </div>
       </li>
@@ -1343,21 +1570,224 @@ function renderizarHorarios(dados) {
 
 
 // ❌ CANCELAR
-window.cancelar = function (id) {
-  if (!confirm("Liberar esse horário e apagar os dados do cliente?")) {
+window.confirmarSolicitacao = async function (id) {
+  const horario = horariosCadastrados.find(h => h.id === id);
+
+  if (!horario) {
+    mostrarMensagemAdmin("⚠️ Solicitação não encontrada.", "orange");
     return;
   }
 
-  update(ref(db, "horarios/" + id), {
-    status: "livre",
-    nome: null,
-    telefone: null,
-    servico: null,
-    valorServico: null
+  if (!confirm(`Confirmar agendamento de ${horario.nome || "cliente"} em ${formatarData(horario.data)} às ${horario.hora}?`)) {
+    return;
+  }
+
+  await update(ref(db, "horarios/" + id), {
+    status: "ocupado",
+    confirmadoEm: new Date().toISOString(),
+    canceladoEm: null
   });
 
-  mostrarMensagemAdmin("✅ Horário liberado!", "lightgreen");
+  mostrarMensagemAdmin("✅ Agendamento confirmado.", "lightgreen");
 };
+
+window.finalizarAgendamento = async function (id) {
+  const horario = horariosCadastrados.find(h => h.id === id);
+
+  if (!horario) {
+    mostrarMensagemAdmin("⚠️ Agendamento não encontrado.", "orange");
+    return;
+  }
+
+  if (horario.status !== "ocupado") {
+    mostrarMensagemAdmin("⚠️ Apenas agendamentos confirmados podem ser finalizados.", "orange");
+    return;
+  }
+
+  if (!confirm(`Finalizar serviço de ${horario.nome || "cliente"} em ${formatarData(horario.data)} às ${horario.hora}?`)) {
+    return;
+  }
+
+  await update(ref(db, "horarios/" + id), {
+    status: "finalizado",
+    valorServico: obterValorHorario(horario),
+    finalizadoEm: new Date().toISOString()
+  });
+
+  mostrarMensagemAdmin("✅ Serviço finalizado e lançado no financeiro.", "lightgreen");
+};
+
+window.cancelarSolicitacao = async function (id) {
+  const horario = horariosCadastrados.find(h => h.id === id);
+
+  if (!horario) {
+    mostrarMensagemAdmin("⚠️ Solicitação não encontrada.", "orange");
+    return;
+  }
+
+  if (!confirm(`Cancelar solicitação de ${horario.nome || "cliente"} em ${formatarData(horario.data)} às ${horario.hora}?`)) {
+    return;
+  }
+
+  await update(ref(db, "horarios/" + id), {
+    status: "cancelado",
+    canceladoEm: new Date().toISOString()
+  });
+  await liberarHorarioSeFuturo(horario);
+
+  mostrarMensagemAdmin("Solicitação cancelada e horário liberado.", "orange");
+};
+
+window.cancelar = async function (id) {
+  const horario = horariosCadastrados.find(h => h.id === id);
+
+  if (!horario) {
+    mostrarMensagemAdmin("⚠️ Agendamento não encontrado.", "orange");
+    return;
+  }
+
+  if (!confirm("Cancelar esse agendamento e liberar o horário?")) {
+    return;
+  }
+
+  await update(ref(db, "horarios/" + id), {
+    status: "cancelado",
+    canceladoEm: new Date().toISOString()
+  });
+  await liberarHorarioSeFuturo(horario);
+
+  mostrarMensagemAdmin("Agendamento cancelado e horário liberado.", "orange");
+};
+
+window.editarAgendamentoConfirmado = function (id) {
+  const horario = horariosCadastrados.find(h => h.id === id);
+
+  if (!horario || horario.status !== "ocupado") {
+    mostrarMensagemAdmin("⚠️ Agendamento confirmado não encontrado.", "orange");
+    return;
+  }
+
+  editarAgendamentoId.value = id;
+  editarAgendamentoData.value = horario.data || "";
+  editarAgendamentoHora.value = horario.hora || "";
+  editarAgendamentoBarbeiro.value = horario.barber || "";
+  editarAgendamentoNome.value = horario.nome || "";
+  editarAgendamentoTelefone.value = horario.telefone || "";
+  renderizarSelectServicos();
+  servicosEdicaoSelecionados = obterServicosDoHorario(horario);
+  editarAgendamentoServico.value = "";
+  renderizarServicosEdicao();
+  msgEditarAgendamento.textContent = "";
+
+  if (typeof modalEditarAgendamento.showModal === "function") {
+    modalEditarAgendamento.showModal();
+  } else {
+    modalEditarAgendamento.setAttribute("open", "");
+  }
+};
+
+function fecharModalEditarAgendamento() {
+  formEditarAgendamento?.reset();
+  servicosEdicaoSelecionados = [];
+  renderizarServicosEdicao();
+  if (modalEditarAgendamento?.open) {
+    modalEditarAgendamento.close();
+  }
+}
+
+btnFecharModalAgendamento?.addEventListener("click", fecharModalEditarAgendamento);
+btnCancelarModalAgendamento?.addEventListener("click", fecharModalEditarAgendamento);
+
+modalEditarAgendamento?.addEventListener("click", (event) => {
+  if (event.target === modalEditarAgendamento) {
+    fecharModalEditarAgendamento();
+  }
+});
+
+btnAdicionarServicoAgendamento?.addEventListener("click", () => {
+  const nome = editarAgendamentoServico.value;
+  const servicoSelecionado = obterServicoPorNome(nome);
+
+  if (!nome || !servicoSelecionado) {
+    msgEditarAgendamento.textContent = "Escolha um serviço para adicionar.";
+    msgEditarAgendamento.style.color = "orange";
+    return;
+  }
+
+  servicosEdicaoSelecionados.push({
+    nome: servicoSelecionado.nome,
+    preco: Number(servicoSelecionado.preco || 0)
+  });
+  editarAgendamentoServico.value = "";
+  msgEditarAgendamento.textContent = "";
+  renderizarServicosEdicao();
+});
+
+btnCancelarHorarioModal?.addEventListener("click", async () => {
+  const id = editarAgendamentoId.value;
+
+  if (!id) return;
+  fecharModalEditarAgendamento();
+  await window.cancelar(id);
+});
+
+btnExcluirRegistroModal?.addEventListener("click", async () => {
+  const id = editarAgendamentoId.value;
+
+  if (!id || !confirm("Excluir esse registro do painel?")) return;
+
+  await remove(ref(db, "horarios/" + id));
+  fecharModalEditarAgendamento();
+  mostrarMensagemAdmin("Registro excluído.", "orange");
+});
+
+formEditarAgendamento?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  const id = editarAgendamentoId.value;
+  const data = editarAgendamentoData.value;
+  const hora = editarAgendamentoHora.value;
+  const barber = editarAgendamentoBarbeiro.value;
+  const nome = editarAgendamentoNome.value.trim();
+  const telefone = editarAgendamentoTelefone.value.trim();
+  const servico = servicosEdicaoSelecionados.map((servicoItem) => servicoItem.nome).join(", ");
+  const valorServico = servicosEdicaoSelecionados.reduce((total, servicoItem) => total + Number(servicoItem.preco || 0), 0);
+
+  if (!id || !data || !hora || !barber || !nome || !telefone || servicosEdicaoSelecionados.length === 0) {
+    msgEditarAgendamento.textContent = "Preencha todos os campos.";
+    msgEditarAgendamento.style.color = "orange";
+    return;
+  }
+
+  if (dataHoraJaPassou(data, hora)) {
+    msgEditarAgendamento.textContent = "Escolha um horário futuro.";
+    msgEditarAgendamento.style.color = "orange";
+    return;
+  }
+
+  if (existeConflitoAgendamento({ id, data, hora, barber })) {
+    msgEditarAgendamento.textContent = "Já existe solicitação, confirmação ou bloqueio nesse horário.";
+    msgEditarAgendamento.style.color = "orange";
+    return;
+  }
+
+  await update(ref(db, "horarios/" + id), {
+    data,
+    hora,
+    barber,
+    nome,
+    telefone,
+    servico,
+    servicos: servicosEdicaoSelecionados,
+    valorServico,
+    status: "ocupado",
+    tipoBloqueio: null,
+    atualizadoEm: new Date().toISOString()
+  });
+
+  fecharModalEditarAgendamento();
+  mostrarMensagemAdmin("✅ Agendamento atualizado.", "lightgreen");
+});
 
 window.editarHorarioPadrao = function (data, hora, barberNome) {
   horarioEditandoId = null;

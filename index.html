@@ -49,17 +49,34 @@
       <h2>Agende seu horário</h2>
       <p>Escolha o dia, veja os horários livres e finalize pelo WhatsApp.</p>
 
-      <div class="filtro-barbeiro-container">
-        <label>Escolha o barbeiro</label>
-        <div class="barbeiro-opcoes" aria-label="Escolha o barbeiro">
-          <button type="button" class="barbeiro-opcao" data-barbeiro="Isac">Isac</button>
-          <button type="button" class="barbeiro-opcao" data-barbeiro="Carlos">Carlos</button>
+      <div class="etapas-agendamento" aria-label="Etapas do agendamento">
+        <div class="etapa-agendamento ativa"><strong>1</strong><span><b>Barbeiro</b><small>Escolha o profissional</small></span></div>
+        <i aria-hidden="true"></i>
+        <div class="etapa-agendamento"><strong>2</strong><span><b>Data</b><small>Selecione o dia</small></span></div>
+        <i aria-hidden="true"></i>
+        <div class="etapa-agendamento"><strong>3</strong><span><b>Horário</b><small>Escolha o horário</small></span></div>
+        <i aria-hidden="true"></i>
+        <div class="etapa-agendamento"><strong>4</strong><span><b>Serviço</b><small>Selecione o serviço</small></span></div>
+        <i aria-hidden="true"></i>
+        <div class="etapa-agendamento"><strong>5</strong><span><b>Seus dados</b><small>Complete seus dados</small></span></div>
+        <i aria-hidden="true"></i>
+        <div class="etapa-agendamento"><strong>6</strong><span><b>Confirmação</b><small>Finalize o agendamento</small></span></div>
+      </div>
+
+      <div class="barbeiro-coluna">
+        <div class="filtro-barbeiro-container">
+          <label>Escolha o barbeiro</label>
+          <div class="barbeiro-opcoes" aria-label="Escolha o barbeiro">
+            <button type="button" class="barbeiro-opcao" data-barbeiro="Isac">Isac</button>
+            <button type="button" class="barbeiro-opcao" data-barbeiro="Carlos">Carlos</button>
+          </div>
+          <select id="filtroBarbeiro" aria-hidden="true" tabindex="-1">
+            <option value="">Escolha o barbeiro</option>
+            <option value="Isac">Isac</option>
+            <option value="Carlos">Carlos</option>
+          </select>
         </div>
-        <select id="filtroBarbeiro" aria-hidden="true" tabindex="-1">
-          <option value="">Escolha o barbeiro</option>
-          <option value="Isac">Isac</option>
-          <option value="Carlos">Carlos</option>
-        </select>
+
       </div>
 
       <div class="agenda-layout">
@@ -100,34 +117,50 @@
         </div>
       </div>
 
-      <!-- FORM -->
-      <form class="form-agendamento">
-        <input type="text" id="nomeCliente" placeholder="Seu nome" autocomplete="name" required>
-        <input type="tel" id="telefoneCliente" placeholder="Seu telefone" inputmode="tel" autocomplete="tel" pattern="[0-9+()\- ]{8,}" required>
+      <div class="formulario-coluna">
+        <!-- FORM -->
+        <form class="form-agendamento">
+          <input type="text" id="nomeCliente" placeholder="Seu nome" autocomplete="name" required>
+          <input type="tel" id="telefoneCliente" placeholder="Seu telefone" inputmode="tel" autocomplete="tel" pattern="[0-9+()\- ]{8,}" required>
 
-        <details class="servicos-cliente" id="servicosCliente">
-          <summary>
-            <span id="resumoServicosTexto">Escolha o serviço</span>
-            <strong id="resumoServicosTotal">R$ 0,00</strong>
-          </summary>
+          <details class="servicos-cliente" id="servicosCliente" open>
+            <summary>
+              <span id="resumoServicosTexto">Escolha o serviço</span>
+              <strong id="resumoServicosTotal">R$ 0,00</strong>
+            </summary>
 
-          <div id="listaServicosCliente"></div>
+            <div id="listaServicosCliente"></div>
 
-          <div class="servicos-total">
-            <span>Saldo total</span>
-            <strong id="totalServicosCliente">R$ 0,00</strong>
+            <div class="servicos-total">
+              <span>Saldo total</span>
+              <strong id="totalServicosCliente">R$ 0,00</strong>
+            </div>
+          </details>
+
+          <!-- escondidos (preenchidos automaticamente) -->
+          <input type="date" id="dataSelecionada" hidden>
+          <input type="time" id="horaSelecionada" hidden>
+          <input type="hidden" id="barbeiroSelecionado">
+
+          <p id="resumoEscolha" class="resumo-escolha">Escolha uma data e um horário livre.</p>
+
+          <button type="submit" id="btnAgendar" disabled>Agendar Horário</button>
+        </form>
+
+        <section class="gerenciar-agendamento" aria-labelledby="tituloGerenciarAgendamento">
+          <h3 id="tituloGerenciarAgendamento">Cancelar registro</h3>
+          <p>Digite o telefone usado no agendamento para encontrar seus horários.</p>
+
+          <div class="gerenciar-busca">
+            <input type="tel" id="telefoneGerenciar" placeholder="Telefone do agendamento" inputmode="tel" autocomplete="tel">
+            <button type="button" id="btnBuscarAgendamentos">Buscar</button>
           </div>
-        </details>
 
-        <!-- escondidos (preenchidos automaticamente) -->
-        <input type="date" id="dataSelecionada" hidden>
-        <input type="time" id="horaSelecionada" hidden>
-        <input type="hidden" id="barbeiroSelecionado">
-
-        <p id="resumoEscolha" class="resumo-escolha">Escolha uma data e um horário livre.</p>
-
-        <button type="submit" id="btnAgendar" disabled>Agendar Horário</button>
-      </form>
+          <div id="listaAgendamentosCliente" class="lista-agendamentos-cliente" aria-live="polite">
+            <p class="estado-vazio">Digite seu telefone para buscar seus registros.</p>
+          </div>
+        </section>
+      </div>
     </div>
   </section>
 
@@ -139,7 +172,7 @@
 
 <script type="module">
 import { db } from "./firebase.js";
-import { ref, onValue, remove, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { ref, push, onValue, remove, get, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 // MENU MOBILE
 const menuBtn = document.querySelector(".menu-mobile");
@@ -183,12 +216,16 @@ const resumoServicosTotal = document.getElementById("resumoServicosTotal");
 const filtroBarbeiro = document.getElementById("filtroBarbeiro");
 const botoesBarbeiro = document.querySelectorAll("[data-barbeiro]");
 const barbeiroSelecionadoInput = document.getElementById("barbeiroSelecionado");
+const telefoneGerenciar = document.getElementById("telefoneGerenciar");
+const btnBuscarAgendamentos = document.getElementById("btnBuscarAgendamentos");
+const listaAgendamentosCliente = document.getElementById("listaAgendamentosCliente");
 let horarios = [];
 let servicosCadastrados = [];
 let bloqueioPadrao = {
   ativo: false,
-  inicio: "12:00",
-  fim: "14:00"
+  intervalos: [
+    { inicio: "12:00", fim: "14:00" }
+  ]
 };
 let dataAtiva = "";
 let mesVisivel = new Date();
@@ -207,6 +244,11 @@ function dataHojeChave() {
   const hoje = new Date();
   hoje.setHours(0, 0, 0, 0);
   return formatarChaveData(hoje);
+}
+
+function horarioAindaPodeSerAgendado(data, hora) {
+  if (!data || !hora) return false;
+  return new Date(`${data}T${hora}`) > new Date();
 }
 
 function limparSelecao() {
@@ -240,11 +282,15 @@ function normalizarNomeServico(nome) {
 
 function criarOpcaoServico(servico) {
   const label = document.createElement("label");
+  const indicador = document.createElement("span");
   const nome = document.createElement("span");
   const preco = document.createElement("span");
   const input = document.createElement("input");
 
   label.className = "servico-opcao";
+  indicador.className = "servico-indicador";
+  indicador.setAttribute("aria-hidden", "true");
+  indicador.textContent = "+";
   nome.textContent = servico.nome;
   preco.textContent = formatarMoeda(servico.preco);
   input.type = "checkbox";
@@ -252,7 +298,7 @@ function criarOpcaoServico(servico) {
   input.value = servico.nome;
   input.dataset.preco = Number(servico.preco || 0);
 
-  label.append(nome, preco, input);
+  label.append(indicador, nome, preco, input);
 
   return label;
 }
@@ -283,17 +329,157 @@ function atualizarTotalServicos() {
   const total = servicosSelecionados
     .reduce((soma, servico) => soma + servico.preco, 0);
   const totalFormatado = formatarMoeda(total);
+  const nomesSelecionados = servicosSelecionados.map((servico) => servico.nome).join(", ");
 
   totalServicosCliente.textContent = totalFormatado;
   resumoServicosTotal.textContent = totalFormatado;
-  resumoServicosTexto.textContent = servicosSelecionados.length
-    ? `${servicosSelecionados.length} serviço${servicosSelecionados.length === 1 ? "" : "s"} selecionado${servicosSelecionados.length === 1 ? "" : "s"}`
+  resumoServicosTexto.textContent = nomesSelecionados
+    ? nomesSelecionados
     : "Escolha o serviço";
+  resumoServicosTexto.classList.toggle("texto-compacto", nomesSelecionados.length > 26);
+
+  document.querySelectorAll(".servico-opcao").forEach((opcao) => {
+    opcao.classList.toggle("selecionado", Boolean(opcao.querySelector("input")?.checked));
+  });
 }
 
 listaServicosCliente?.addEventListener("change", (event) => {
   if (event.target.matches("input[name='servicosCliente']")) {
     atualizarTotalServicos();
+  }
+});
+
+function normalizarTelefone(telefone) {
+  return String(telefone || "").replace(/\D/g, "");
+}
+
+function escaparHTML(valor) {
+  const mapa = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;"
+  };
+
+  return String(valor || "").replace(/[&<>"']/g, (caractere) => mapa[caractere]);
+}
+
+function obterTextoStatus(status) {
+  const mapa = {
+    solicitado: "Aguardando confirmação",
+    ocupado: "Confirmado",
+    cancelado: "Cancelado"
+  };
+
+  return mapa[status] || status || "Registro";
+}
+
+function obterAgendamentosDoTelefone(telefone) {
+  const telefoneBusca = normalizarTelefone(telefone);
+
+  if (telefoneBusca.length < 8) return [];
+
+  return horarios
+    .filter((horario) => {
+      if (horario.padrao || !horario.nome || !horario.telefone) return false;
+      if (!horarioAindaPodeSerAgendado(horario.data, horario.hora)) return false;
+      const telefoneRegistro = normalizarTelefone(horario.telefone);
+      return telefoneRegistro.endsWith(telefoneBusca) || telefoneBusca.endsWith(telefoneRegistro);
+    })
+    .sort((a, b) => {
+      return new Date(a.data + "T" + (a.hora || "00:00")) - new Date(b.data + "T" + (b.hora || "00:00"));
+    });
+}
+
+function renderizarAgendamentosCliente() {
+  if (!listaAgendamentosCliente || !telefoneGerenciar) return;
+
+  const telefoneBusca = telefoneGerenciar.value.trim();
+
+  if (!telefoneBusca) {
+    listaAgendamentosCliente.innerHTML = "<p class=\"estado-vazio\">Digite seu telefone para buscar seus registros.</p>";
+    return;
+  }
+
+  const encontrados = obterAgendamentosDoTelefone(telefoneBusca);
+
+  if (!encontrados.length) {
+    listaAgendamentosCliente.innerHTML = "<p class=\"estado-vazio\">Nenhum agendamento encontrado para esse telefone.</p>";
+    return;
+  }
+
+  listaAgendamentosCliente.innerHTML = encontrados.map((horario) => {
+    const podeCancelar = ["solicitado", "ocupado"].includes(horario.status);
+    const servico = horario.servico || (Array.isArray(horario.servicos) ? horario.servicos.map(item => item.nome).join(", ") : "");
+
+    return `
+      <article class="agendamento-cliente-card ${escaparHTML(horario.status)}">
+        <div>
+          <strong>${formatarDataBR(horario.data)} às ${escaparHTML(horario.hora)}</strong>
+          <span>${escaparHTML(obterTextoStatus(horario.status))}</span>
+          <small>${escaparHTML(horario.barber || "Barbeiro")} · ${escaparHTML(servico || "Serviço")}</small>
+        </div>
+        <div class="agendamento-cliente-acoes">
+          ${podeCancelar ? `<button type="button" data-acao-agendamento="cancelar" data-id="${escaparHTML(horario.id)}">Cancelar</button>` : ""}
+        </div>
+      </article>
+    `;
+  }).join("");
+}
+
+btnBuscarAgendamentos?.addEventListener("click", renderizarAgendamentosCliente);
+telefoneGerenciar?.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    renderizarAgendamentosCliente();
+  }
+});
+
+listaAgendamentosCliente?.addEventListener("click", async (event) => {
+  const botao = event.target.closest("[data-acao-agendamento]");
+  if (!botao) return;
+
+  const id = botao.dataset.id;
+  const acao = botao.dataset.acaoAgendamento;
+  const horario = horarios.find((item) => item.id === id);
+
+  if (!horario) {
+    alert("Registro não encontrado.");
+    renderizarAgendamentosCliente();
+    return;
+  }
+
+  if (acao === "cancelar") {
+    if (!confirm("Cancelar esse agendamento e liberar o horário?")) return;
+
+    botao.disabled = true;
+    try {
+      await update(ref(db, "horarios/" + id), {
+        status: "cancelado",
+        canceladoEm: new Date().toISOString()
+      });
+      renderizarAgendamentosCliente();
+    } catch (error) {
+      console.error("Erro ao cancelar agendamento:", error);
+      alert("Não foi possível cancelar agora. Tente novamente.");
+      botao.disabled = false;
+    }
+    return;
+  }
+
+  if (acao === "excluir") {
+    if (!confirm("Excluir esse registro da tela?")) return;
+
+    botao.disabled = true;
+    try {
+      await remove(ref(db, "horarios/" + id));
+      renderizarAgendamentosCliente();
+    } catch (error) {
+      console.error("Erro ao excluir registro:", error);
+      alert("Não foi possível excluir agora. Tente novamente.");
+      botao.disabled = false;
+    }
   }
 });
 
@@ -315,18 +501,36 @@ function converterMinutosParaHora(totalMinutos) {
   return `${String(horas).padStart(2, "0")}:${String(minutos).padStart(2, "0")}`;
 }
 
+function normalizarIntervalosBloqueio(dados = {}) {
+  const origem = Array.isArray(dados.intervalos) && dados.intervalos.length
+    ? dados.intervalos
+    : [{ inicio: dados.inicio || "12:00", fim: dados.fim || "14:00" }];
+
+  const intervalos = origem
+    .map((intervalo) => ({
+      inicio: intervalo?.inicio || "",
+      fim: intervalo?.fim || ""
+    }))
+    .filter((intervalo) => intervalo.inicio && intervalo.fim);
+
+  return intervalos.length ? intervalos : [{ inicio: "12:00", fim: "14:00" }];
+}
+
 function horarioEstaNoBloqueioPadrao(hora) {
-  if (!bloqueioPadrao.ativo || !bloqueioPadrao.inicio || !bloqueioPadrao.fim || !hora) {
+  if (!bloqueioPadrao.ativo || !hora) {
     return false;
   }
 
   const minutoHorario = converterHoraParaMinutos(hora);
-  const minutoInicio = converterHoraParaMinutos(bloqueioPadrao.inicio);
-  const minutoFim = converterHoraParaMinutos(bloqueioPadrao.fim);
 
-  return minutoFim > minutoInicio
-    && minutoHorario >= minutoInicio
-    && minutoHorario < minutoFim;
+  return normalizarIntervalosBloqueio(bloqueioPadrao).some((intervalo) => {
+    const minutoInicio = converterHoraParaMinutos(intervalo.inicio);
+    const minutoFim = converterHoraParaMinutos(intervalo.fim);
+
+    return minutoFim > minutoInicio
+      && minutoHorario >= minutoInicio
+      && minutoHorario < minutoFim;
+  });
 }
 
 function chaveHorario(horario) {
@@ -398,13 +602,16 @@ function obterHorariosDoDia(data) {
 
   registrosDoDia.forEach((horario) => {
     if (horario.tipoBloqueio === "dia") return;
+    if (horario.status === "cancelado") return;
     mapa.set(chaveHorario(horario), horario);
   });
 
-  return [...mapa.values()].sort((a, b) => {
-    return new Date(a.data + "T" + a.hora) - new Date(b.data + "T" + b.hora)
-      || String(a.barber || "").localeCompare(String(b.barber || ""), "pt-BR");
-  });
+  return [...mapa.values()]
+    .filter((horario) => horarioAindaPodeSerAgendado(horario.data, horario.hora))
+    .sort((a, b) => {
+      return new Date(a.data + "T" + a.hora) - new Date(b.data + "T" + b.hora)
+        || String(a.barber || "").localeCompare(String(b.barber || ""), "pt-BR");
+    });
 }
 
 async function limparVagasPassadas() {
@@ -686,8 +893,7 @@ onValue(ref(db, "configuracoes/bloqueioPadrao"), (snapshot) => {
 
   bloqueioPadrao = {
     ativo: Boolean(dados.ativo),
-    inicio: dados.inicio || "12:00",
-    fim: dados.fim || "14:00"
+    intervalos: normalizarIntervalosBloqueio(dados)
   };
 
   renderizarCalendario();
@@ -767,6 +973,7 @@ onValue(ref(db, "horarios"), (snapshot) => {
 
   renderizarCalendario();
   renderizarHorariosDoDia();
+  renderizarAgendamentosCliente();
 }, (error) => {
   console.error("Erro ao carregar horários:", error);
   renderizarCalendario();
@@ -777,7 +984,7 @@ onValue(ref(db, "horarios"), (snapshot) => {
 // FORMULÁRIO WHATSAPP
 const form = document.querySelector(".form-agendamento");
 
-form.addEventListener("submit", function (e) {
+form.addEventListener("submit", async function (e) {
   e.preventDefault();
 
   const nome = nomeCliente.value.trim();
@@ -790,6 +997,59 @@ form.addEventListener("submit", function (e) {
 
   if (!nome || !telefone || servicos.length === 0 || !data || !hora) {
     alert("Selecione um horário disponível!");
+    return;
+  }
+
+  btnAgendar.disabled = true;
+  btnAgendar.textContent = "Enviando solicitação...";
+
+  try {
+    const snapshot = await get(ref(db, "horarios"));
+    let horarioIndisponivel = false;
+
+    if (snapshot.exists()) {
+      snapshot.forEach((child) => {
+        const horario = child.val();
+
+        if (
+          horario.data === data &&
+          horario.hora === hora &&
+          horario.barber === barbeiro &&
+          ["solicitado", "ocupado", "bloqueado"].includes(horario.status)
+        ) {
+          horarioIndisponivel = true;
+        }
+      });
+    }
+
+    if (horarioIndisponivel) {
+      alert("Esse horário acabou de ficar indisponível. Escolha outro horário.");
+      renderizarHorariosDoDia();
+      return;
+    }
+
+    await push(ref(db, "horarios"), {
+      data,
+      hora,
+      nome,
+      telefone,
+      servico: servicos.map((servico) => servico.nome).join(", "),
+      servicos: servicos.map((servico) => ({
+        nome: servico.nome,
+        preco: servico.preco
+      })),
+      valorServico: totalServicos,
+      status: "solicitado",
+      barber: barbeiro,
+      tipoBloqueio: null,
+      criadoEm: new Date().toISOString(),
+      lembreteEnviado: false
+    });
+  } catch (error) {
+    console.error("Erro ao solicitar agendamento:", error);
+    alert("Não foi possível enviar a solicitação agora. Tente novamente.");
+    btnAgendar.disabled = false;
+    btnAgendar.textContent = "Agendar pelo WhatsApp";
     return;
   }
 

@@ -178,13 +178,60 @@ button {
 body.section-agendamentos .admin-layout,
 body.section-servicos .painel-sections,
 body.section-financeiro .painel-sections,
-body.section-clientes .painel-sections,
-body.section-configuracoes .painel-sections {
+body.section-clientes .painel-sections {
   grid-template-columns: 1fr;
 }
 
 body.section-horarios .admin-layout {
-  grid-template-columns: minmax(300px, 520px);
+  grid-template-columns: minmax(0, 980px);
+  justify-content: center;
+}
+
+body.section-horarios .form-card {
+  position: static;
+}
+
+.horarios-panel {
+  width: 100%;
+}
+
+.horarios-header {
+  margin-bottom: 18px;
+}
+
+.horarios-header h3 {
+  font-size: clamp(22px, 2.4vw, 30px);
+}
+
+.horarios-panel .bloqueio-padrao-card {
+  margin: 0 0 18px;
+  padding: 18px;
+  border: 1px solid rgba(212, 175, 55, 0.16);
+  border-radius: 10px;
+  background: rgba(212, 175, 55, 0.06);
+}
+
+.horarios-panel .calendario-grupo {
+  margin-top: 0;
+}
+
+.horarios-panel .admin-calendario {
+  margin-top: 0;
+  padding: 18px;
+}
+
+.horarios-panel .calendario-dias,
+.horarios-panel .dias-semana {
+  gap: 8px;
+}
+
+.horarios-panel .dia-vazio,
+.horarios-panel .dia-calendario {
+  min-height: 68px;
+}
+
+.horarios-panel .dia-calendario strong {
+  font-size: 16px;
 }
 
 .admin-topo {
@@ -219,6 +266,8 @@ body.section-horarios .admin-layout {
 .header-acoes {
   display: flex;
   align-items: center;
+  justify-self: end;
+  grid-column: 3;
   gap: 10px;
 }
 
@@ -454,7 +503,6 @@ small {
 
 .bloqueio-horarios {
   display: grid;
-  grid-template-columns: 1fr 1fr;
   gap: 10px;
 }
 
@@ -462,8 +510,36 @@ small {
   margin-top: 0;
 }
 
+.bloqueio-intervalo {
+  display: grid;
+  grid-template-columns: 1fr 1fr 42px;
+  align-items: end;
+  gap: 10px;
+}
+
+.btn-remover-bloqueio {
+  width: 42px;
+  min-height: 44px;
+  border: 1px solid rgba(239, 68, 68, 0.32);
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.1);
+  color: #f87171;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.bloqueio-intervalo:first-child .btn-remover-bloqueio {
+  visibility: hidden;
+}
+
 .bloqueio-padrao-form .btn {
   margin-top: 0;
+}
+
+.bloqueio-padrao-form .btn-add-bloqueio {
+  justify-self: start;
+  width: auto;
+  padding-inline: 14px;
 }
 
 .bloqueio-padrao-form .msg {
@@ -597,6 +673,19 @@ small {
 .dot.poucas,
 .status-dot.poucas {
   background: #facc15;
+}
+
+.dot.solicitado,
+.status-dot.solicitado {
+  background: #38bdf8;
+}
+
+.status-dot.finalizado {
+  background: #22c55e;
+}
+
+.status-dot.cancelado {
+  background: #94a3b8;
 }
 
 .dot.ocupado,
@@ -971,6 +1060,21 @@ ul {
   color: #fde68a;
 }
 
+.solicitado .status-pill {
+  background: rgba(56, 189, 248, 0.14);
+  color: #bae6fd;
+}
+
+.finalizado .status-pill {
+  background: rgba(34, 197, 94, 0.14);
+  color: #86efac;
+}
+
+.cancelado .status-pill {
+  background: rgba(148, 163, 184, 0.13);
+  color: #cbd5e1;
+}
+
 .bloqueado .status-pill {
   background: rgba(239, 68, 68, 0.14);
   color: #fecaca;
@@ -1010,6 +1114,36 @@ ul {
   content: "✓";
 }
 
+.btn-confirmar {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.26);
+  color: #86efac;
+}
+
+.btn-confirmar::before {
+  content: "✓";
+}
+
+.btn-finalizar {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.26);
+  color: #86efac;
+}
+
+.btn-finalizar::before {
+  content: "✓";
+}
+
+.btn-cancelar {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.26);
+  color: #fca5a5;
+}
+
+.btn-cancelar::before {
+  content: "×";
+}
+
 .btn-editar {
   background: rgba(212, 175, 55, 0.11);
   border-color: rgba(212, 175, 55, 0.32);
@@ -1028,6 +1162,149 @@ ul {
 
 .btn-delete::before {
   content: "×";
+}
+
+.modal-agendamento {
+  position: fixed;
+  inset: 0;
+  width: min(720px, calc(100vw - 28px));
+  height: fit-content;
+  max-height: calc(100dvh - 34px);
+  margin: auto;
+  padding: 0;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 10px;
+  background: transparent;
+  color: #f8fafc;
+  overflow: hidden;
+}
+
+.modal-agendamento::backdrop {
+  background: rgba(0, 0, 0, 0.72);
+}
+
+.modal-agendamento-card {
+  max-height: calc(100dvh - 34px);
+  overflow-y: auto;
+  padding: 22px;
+  background:
+    linear-gradient(145deg, rgba(12, 18, 22, 0.98), rgba(4, 7, 9, 0.98)),
+    radial-gradient(circle at 18% 0, rgba(212, 175, 55, 0.09), transparent 30%);
+}
+
+.modal-agendamento-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.modal-agendamento-grid .form-group {
+  margin-top: 0;
+}
+
+.modal-fechar {
+  width: 38px;
+  min-height: 38px;
+  border: 1px solid rgba(239, 68, 68, 0.26);
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.1);
+  color: #fca5a5;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.modal-acoes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.modal-acoes-perigo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.modal-acoes .btn,
+.modal-acoes-perigo .btn {
+  margin-top: 0;
+}
+
+.btn-cancelar-modal {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.32);
+  color: #fca5a5;
+}
+
+.btn-excluir-modal {
+  min-height: 44px;
+}
+
+.servico-modal-picker {
+  display: grid;
+  gap: 8px;
+}
+
+.servico-add-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 46px;
+  gap: 8px;
+}
+
+.btn-add-servico {
+  min-height: 44px;
+  border: 1px solid rgba(212, 175, 55, 0.44);
+  border-radius: 8px;
+  background: rgba(212, 175, 55, 0.12);
+  color: #facc15;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.servicos-selecionados {
+  min-height: 42px;
+  padding: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 8px;
+  background: #0d1317;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.servicos-selecionados.vazio::before {
+  content: "Nenhum serviço selecionado";
+  color: #858c94;
+  font-size: 12px;
+}
+
+.servico-chip {
+  max-width: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  padding: 4px 8px;
+  border-radius: 7px;
+  background: rgba(212, 175, 55, 0.12);
+  color: #fde68a;
+  font-size: clamp(10px, 2.6vw, 12px);
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.servico-chip button {
+  width: 18px;
+  height: 18px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(239, 68, 68, 0.18);
+  color: #fca5a5;
+  font-size: 13px;
+  font-weight: 900;
 }
 
 .empty-state {
@@ -1173,9 +1450,36 @@ ul {
     grid-template-columns: 1fr;
   }
 
-  .config-item-form,
-  .bloqueio-horarios {
+  .modal-agendamento-grid,
+  .modal-acoes,
+  .modal-acoes-perigo {
     grid-template-columns: 1fr;
+  }
+
+  .modal-agendamento {
+    width: min(342px, calc(100vw - 32px));
+    max-height: calc(100dvh - 96px);
+  }
+
+  .modal-agendamento-card {
+    max-height: calc(100dvh - 96px);
+    padding: 16px;
+  }
+
+  .config-item-form {
+    grid-template-columns: 1fr;
+  }
+
+  .bloqueio-intervalo {
+    grid-template-columns: 1fr;
+  }
+
+  .btn-remover-bloqueio {
+    width: 100%;
+  }
+
+  .horarios-panel .bloqueio-padrao-card {
+    padding: 14px;
   }
 
   .financeiro-grid {
@@ -1207,6 +1511,18 @@ ul {
 
   #lista > li.ocupado {
     border-left-color: #facc15;
+  }
+
+  #lista > li.solicitado {
+    border-left-color: #38bdf8;
+  }
+
+  #lista > li.finalizado {
+    border-left-color: #22c55e;
+  }
+
+  #lista > li.cancelado {
+    border-left-color: #94a3b8;
   }
 
   #lista > li.bloqueado {
@@ -1322,7 +1638,7 @@ ul {
 
   .filtros-rapidos {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
   }
 
   .filtros-rapidos button {
@@ -1341,6 +1657,11 @@ ul {
 
   .dia-vazio,
   .dia-calendario {
+    min-height: 46px;
+  }
+
+  .horarios-panel .dia-vazio,
+  .horarios-panel .dia-calendario {
     min-height: 46px;
   }
 
