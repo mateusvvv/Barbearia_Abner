@@ -84,9 +84,12 @@ const btnFecharModalAgendamento = document.getElementById("btnFecharModalAgendam
 const btnAdicionarServicoAgendamento = document.getElementById("btnAdicionarServicoAgendamento");
 const btnCancelarAgendamentoModal = document.getElementById("btnCancelarAgendamentoModal");
 let horariosCadastrados = [];
+let registrosFinanceiros = [];
 let cancelarListenerHorarios = null;
+let cancelarListenerFinanceiro = null;
 let cancelarListenerServicos = null;
 let cancelarListenerConfiguracoes = null;
+let timerFinalizacaoAutomatica = null;
 let servicosCadastrados = [];
 let bloqueioPadrao = {
   ativo: false,
@@ -683,10 +686,10 @@ function renderizarServicos() {
   }).join("");
 }
 
-function renderizarFinanceiro(dados) {
+function renderizarFinanceiro(dados = registrosFinanceiros) {
   if (!lucroTotal || !listaFinanceiro) return;
 
-  const finalizados = dados.filter(h => h.status === "finalizado");
+  const finalizados = dados;
   const total = finalizados.reduce((soma, horario) => soma + obterValorHorario(horario), 0);
   const media = finalizados.length ? total / finalizados.length : 0;
 
@@ -713,7 +716,7 @@ function renderizarFinanceiro(dados) {
 }
 
 btnLimparHistoricoFinanceiro?.addEventListener("click", async () => {
-  const finalizados = horariosCadastrados.filter((horario) => horario.status === "finalizado");
+  const finalizados = registrosFinanceiros;
 
   if (finalizados.length === 0) {
     mostrarMensagemAdmin("Nenhum histórico financeiro para apagar.", "orange");
@@ -724,7 +727,10 @@ btnLimparHistoricoFinanceiro?.addEventListener("click", async () => {
     return;
   }
 
-  await Promise.all(finalizados.map((horario) => remove(ref(db, "horarios/" + horario.id))));
+  await Promise.all(finalizados.flatMap((horario) => [
+    remove(ref(db, "financeiro/" + horario.id)),
+    remove(ref(db, "horarios/" + horario.id))
+  ]));
   mostrarMensagemAdmin("🗑️ Histórico financeiro apagado.", "orange");
 });
 
@@ -824,8 +830,52 @@ function carregarServicos() {
     ].sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
 
     renderizarServicos();
-    renderizarFinanceiro(horariosCadastrados);
+    renderizarFinanceiro();
   });
+}
+
+function carregarFinanceiro() {
+  if (cancelarListenerFinanceiro) return;
+
+  cancelarListenerFinanceiro = onValue(ref(db, "financeiro"), (snapshot) => {
+    const dados = [];
+
+    if (snapshot.exists()) {
+      snapshot.forEach((child) => {
+        dados.push({
+          id: child.key,
+          ...child.val()
+        });
+      });
+    }
+
+    dados.sort((a, b) => new Date(`${b.data}T${b.hora || "00:00"}`) - new Date(`${a.data}T${a.hora || "00:00"}`));
+    registrosFinanceiros = dados;
+    renderizarFinanceiro();
+  });
+}
+
+async function migrarFinalizadosParaFinanceiro(dados) {
+  const finalizados = dados.filter((horario) => horario.status === "finalizado");
+
+  await Promise.all(finalizados.map(async (horario) => {
+    const registroRef = ref(db, "financeiro/" + horario.id);
+    const registro = await get(registroRef);
+
+    if (!registro.exists()) {
+      await update(registroRef, {
+        data: horario.data || "",
+        hora: horario.hora || "",
+        nome: horario.nome || "",
+        telefone: horario.telefone || "",
+        servico: horario.servico || "",
+        servicos: horario.servicos || null,
+        valorServico: obterValorHorario(horario),
+        finalizadoEm: horario.finalizadoEm || null,
+        barber: horario.barber || ""
+      });
+    }
+  }));
 }
 
 function carregarConfiguracoes() {
@@ -1237,6 +1287,46 @@ async function limparVagasLivresPassadas() {
   });
 }
 
+async function finalizarAgendamentosPassados() {
+  const snapshot = await get(ref(db, "horarios"));
+
+  if (!snapshot.exists()) return;
+
+  const agora = new Date();
+  const finalizacoes = [];
+
+  snapshot.forEach((child) => {
+    const horario = child.val();
+    const dataHoraAgendamento = new Date(`${horario.data}T${horario.hora || "23:59:59"}`);
+
+    if (horario.status !== "ocupado" || dataHoraAgendamento > agora) return;
+
+    const finalizadoEm = new Date().toISOString();
+    const dadosFinanceiro = {
+      data: horario.data || "",
+      hora: horario.hora || "",
+      nome: horario.nome || "",
+      telefone: horario.telefone || "",
+      servico: horario.servico || "",
+      servicos: horario.servicos || null,
+      valorServico: obterValorHorario(horario),
+      finalizadoEm,
+      barber: horario.barber || ""
+    };
+
+    finalizacoes.push(
+      update(ref(db, "horarios/" + child.key), {
+        status: "finalizado",
+        valorServico: dadosFinanceiro.valorServico,
+        finalizadoEm
+      }),
+      update(ref(db, "financeiro/" + child.key), dadosFinanceiro)
+    );
+  });
+
+  await Promise.all(finalizacoes);
+}
+
 onAuthStateChanged(auth, async (user) => {
   const login = document.getElementById("login");
   const painel = document.getElementById("painel");
@@ -1247,13 +1337,27 @@ onAuthStateChanged(auth, async (user) => {
       painel.classList.remove("hidden");
       notificacoesAgendamentos?.classList.remove("hidden");
       await limparVagasLivresPassadas();
+      await finalizarAgendamentosPassados();
+      if (!timerFinalizacaoAutomatica) {
+        timerFinalizacaoAutomatica = setInterval(() => {
+          finalizarAgendamentosPassados().catch((error) => {
+            console.error("Erro na finalização automática:", error);
+          });
+        }, 60000);
+      }
       carregarServicos();
+      carregarFinanceiro();
       carregarConfiguracoes();
       carregarHorarios();
     } catch (error) {
       console.error("Erro ao inicializar painel:", error);
     }
   } else {
+    if (timerFinalizacaoAutomatica) {
+      clearInterval(timerFinalizacaoAutomatica);
+      timerFinalizacaoAutomatica = null;
+    }
+
     login.classList.remove("hidden");
     painel.classList.add("hidden");
     notificacoesAgendamentos?.classList.add("hidden");
@@ -1262,6 +1366,11 @@ onAuthStateChanged(auth, async (user) => {
     if (cancelarListenerHorarios) {
       cancelarListenerHorarios();
       cancelarListenerHorarios = null;
+    }
+
+    if (cancelarListenerFinanceiro) {
+      cancelarListenerFinanceiro();
+      cancelarListenerFinanceiro = null;
     }
 
     if (cancelarListenerServicos) {
@@ -1484,7 +1593,7 @@ function carregarHorarios() {
     if (!snapshot.exists()) {
       horariosCadastrados = [];
       atualizarResumo(horariosCadastrados);
-      renderizarFinanceiro(horariosCadastrados);
+      renderizarFinanceiro();
       renderizarClientes(horariosCadastrados);
       renderizarCalendarioAdmin();
       renderizarHorarios(horariosCadastrados);
@@ -1506,8 +1615,11 @@ function carregarHorarios() {
     });
 
     horariosCadastrados = dados;
+    migrarFinalizadosParaFinanceiro(dados).catch((error) => {
+      console.error("Erro ao migrar histórico financeiro:", error);
+    });
     atualizarResumo(horariosCadastrados);
-    renderizarFinanceiro(horariosCadastrados);
+    renderizarFinanceiro();
     renderizarClientes(horariosCadastrados);
     renderizarCalendarioAdmin();
     renderizarHorarios(horariosCadastrados);
@@ -1661,11 +1773,24 @@ window.finalizarAgendamento = async function (id) {
     return;
   }
 
+  const dadosFinanceiro = {
+    data: horario.data || "",
+    hora: horario.hora || "",
+    nome: horario.nome || "",
+    telefone: horario.telefone || "",
+    servico: horario.servico || "",
+    servicos: horario.servicos || null,
+    valorServico: obterValorHorario(horario),
+    finalizadoEm: new Date().toISOString(),
+    barber: horario.barber || ""
+  };
+
   await update(ref(db, "horarios/" + id), {
     status: "finalizado",
-    valorServico: obterValorHorario(horario),
-    finalizadoEm: new Date().toISOString()
+    valorServico: dadosFinanceiro.valorServico,
+    finalizadoEm: dadosFinanceiro.finalizadoEm
   });
+  await update(ref(db, "financeiro/" + id), dadosFinanceiro);
 
   mostrarMensagemAdmin("✅ Serviço finalizado e lançado no financeiro.", "lightgreen");
 };
