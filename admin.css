@@ -149,13 +149,36 @@ button {
 }
 
 .nav-logout {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   width: 100%;
-  min-height: 42px;
-  border: 1px solid rgba(212, 175, 55, 0.36);
-  border-radius: 8px;
+  min-height: 52px;
+  padding: 0 24px;
+  border: 0;
+  border-left: 4px solid transparent;
   background: transparent;
   color: #f8fafc;
+  font-size: 14px;
   font-weight: 700;
+  text-align: left;
+  transition: background 0.2s ease, border 0.2s ease, color 0.2s ease;
+}
+
+.nav-logout span {
+  width: 20px;
+  color: #facc15;
+  font-size: 22px;
+  line-height: 1;
+  text-align: center;
+}
+
+.nav-logout:hover,
+.nav-logout:focus-visible {
+  background: linear-gradient(90deg, rgba(212, 175, 55, 0.25), rgba(212, 175, 55, 0.05));
+  border-left-color: #facc15;
+  color: #fff;
+  outline: none;
 }
 
 .admin-main {
