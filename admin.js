@@ -1221,6 +1221,7 @@ onAuthStateChanged(auth, async (user) => {
     try {
       login.classList.add("hidden");
       painel.classList.remove("hidden");
+      notificacoesAgendamentos?.classList.remove("hidden");
       await limparVagasLivresPassadas();
       carregarServicos();
       carregarConfiguracoes();
@@ -1231,6 +1232,7 @@ onAuthStateChanged(auth, async (user) => {
   } else {
     login.classList.remove("hidden");
     painel.classList.add("hidden");
+    notificacoesAgendamentos?.classList.add("hidden");
     atualizarNotificacoes(0);
 
     if (cancelarListenerHorarios) {
