@@ -175,6 +175,10 @@ button {
   display: grid;
 }
 
+body:not(.section-dashboard) #indicadores {
+  display: none;
+}
+
 body.section-agendamentos .admin-layout,
 body.section-servicos .painel-sections,
 body.section-financeiro .painel-sections,
@@ -205,10 +209,11 @@ body.section-horarios .form-card {
 
 .horarios-panel .bloqueio-padrao-card {
   margin: 0 0 18px;
-  padding: 18px;
-  border: 1px solid rgba(212, 175, 55, 0.16);
-  border-radius: 10px;
-  background: rgba(212, 175, 55, 0.06);
+  padding: 20px 18px 18px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(12, 18, 24, 0.96), rgba(9, 14, 18, 0.94));
+  box-shadow: inset 0 0 0 1px rgba(212, 175, 55, 0.08);
 }
 
 .horarios-panel .calendario-grupo {
@@ -268,7 +273,49 @@ body.section-horarios .form-card {
   align-items: center;
   justify-self: end;
   grid-column: 3;
-  gap: 10px;
+  gap: 14px;
+}
+
+.notificacoes-btn {
+  position: relative;
+  display: inline-flex;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(250, 204, 21, 0.24);
+  border-radius: 8px;
+  background: rgba(250, 204, 21, 0.08);
+  color: #facc15;
+  font-size: 19px;
+}
+
+.notificacoes-btn:hover,
+.notificacoes-btn.tem-notificacoes {
+  border-color: #facc15;
+  background: rgba(250, 204, 21, 0.18);
+}
+
+.notificacoes-contador {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  display: none;
+  min-width: 19px;
+  height: 19px;
+  padding: 0 5px;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #05080a;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 10px;
+  line-height: 1;
+}
+
+.notificacoes-btn.tem-notificacoes .notificacoes-contador {
+  display: inline-flex;
 }
 
 .data-hoje {
@@ -332,6 +379,7 @@ small {
   min-height: 134px;
   padding: 24px 24px 18px 98px;
   position: relative;
+  border-left: 3px solid #facc15;
 }
 
 .resumo-card::before {
@@ -342,26 +390,50 @@ small {
   width: 56px;
   height: 56px;
   border-radius: 10px;
-  background: rgba(250, 204, 21, 0.16);
-  box-shadow: inset 0 0 0 1px rgba(250, 204, 21, 0.12);
+  background: rgba(250, 204, 21, 0.14);
+  box-shadow: inset 0 0 0 1px rgba(250, 204, 21, 0.22);
 }
 
 .resumo-card::after {
-  content: "□";
+  content: "▦";
   position: absolute;
-  left: 43px;
-  top: 34px;
+  left: 24px;
+  top: 24px;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: #facc15;
-  font-size: 25px;
+  font-size: 29px;
   font-weight: 900;
+  line-height: 1;
 }
 
 .livre-card::after {
-  content: "●";
+  content: "◷";
 }
 
 .ocupado-card::after {
-  content: "◆";
+  content: "✓";
+}
+
+.livre-card {
+  border-left-color: #38a8ff;
+}
+
+.livre-card::before {
+  background: rgba(250, 204, 21, 0.14);
+  box-shadow: inset 0 0 0 1px rgba(250, 204, 21, 0.22);
+}
+
+.ocupado-card {
+  border-left-color: #00ed8c;
+}
+
+.ocupado-card::before {
+  background: rgba(250, 204, 21, 0.14);
+  box-shadow: inset 0 0 0 1px rgba(250, 204, 21, 0.22);
 }
 
 .resumo-card span {
@@ -464,6 +536,26 @@ small {
   margin-top: 3px;
 }
 
+.horarios-panel .config-item {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.horarios-panel .config-item strong {
+  color: #fff;
+  font-size: clamp(18px, 2vw, 28px);
+  line-height: 1.2;
+}
+
+.horarios-panel .config-item span {
+  color: #b6c1cf;
+  font-size: 16px;
+  line-height: 1.5;
+  margin-top: 8px;
+}
+
 .servico-acoes {
   display: flex;
   flex: 0 0 auto;
@@ -478,32 +570,36 @@ small {
 .config-item-form {
   align-items: stretch;
   display: grid;
-  grid-template-columns: minmax(180px, 1fr) minmax(280px, 1.2fr);
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.7fr);
+  gap: 22px;
 }
 
 .bloqueio-padrao-form {
   display: grid;
-  gap: 10px;
+  gap: 14px;
 }
 
 .check-row {
   align-items: center;
   display: inline-flex;
-  gap: 10px;
+  gap: 12px;
   color: #f8fafc;
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 800;
+  margin-bottom: 4px;
 }
 
 .check-row input {
-  width: 18px;
-  min-height: 18px;
-  accent-color: #d4af37;
+  width: 22px;
+  min-height: 22px;
+  accent-color: #facc15;
+  border-radius: 6px;
+  transform: translateY(-1px);
 }
 
 .bloqueio-horarios {
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 
 .bloqueio-horarios .form-group {
@@ -514,14 +610,31 @@ small {
   display: grid;
   grid-template-columns: 1fr 1fr 42px;
   align-items: end;
-  gap: 10px;
+  gap: 12px;
+}
+
+.bloqueio-intervalo label {
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: #dfe7f4;
+}
+
+.bloqueio-padrao-form input[type="time"] {
+  min-height: 52px;
+  padding: 12px 14px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 10px;
+  background: rgba(15, 20, 24, 0.96);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
 }
 
 .btn-remover-bloqueio {
   width: 42px;
-  min-height: 44px;
+  min-height: 52px;
   border: 1px solid rgba(239, 68, 68, 0.32);
-  border-radius: 8px;
+  border-radius: 10px;
   background: rgba(239, 68, 68, 0.1);
   color: #f87171;
   font-size: 20px;
@@ -534,13 +647,25 @@ small {
 
 .bloqueio-padrao-form .btn {
   margin-top: 0;
+  min-height: 52px;
+  border-radius: 12px;
+  font-size: 16px;
+  padding: 12px 18px;
 }
 
 .bloqueio-padrao-form .btn-add-bloqueio {
   justify-self: start;
   width: auto;
-  padding-inline: 14px;
+  min-height: 44px;
+  border: 1px solid rgba(250, 204, 21, 0.7);
+  border-radius: 10px;
+  background: rgba(250, 204, 21, 0.08);
+  color: #f8fafc;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 10px 18px;
 }
+
 
 .bloqueio-padrao-form .msg {
   min-height: 18px;
@@ -549,6 +674,18 @@ small {
 
 .bloqueio-padrao-card {
   margin: 16px 0;
+}
+
+.bloqueio-padrao-form button[type="submit"] {
+  min-height: 54px;
+  width: 100%;
+  padding: 12px 18px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #facc15, #d4af37);
+  color: #0b0b0b;
+  font-size: 17px;
+  font-weight: 800;
+  box-shadow: 0 10px 20px rgba(250, 204, 21, 0.14);
 }
 
 .mini-action {
@@ -950,6 +1087,10 @@ input[type="time"] {
   color: #fff !important;
 }
 
+.btn-excluir-tudo::before {
+  display: none;
+}
+
 .btn-delete:hover {
   background: rgba(220, 38, 38, 0.86) !important;
   color: #fff !important;
@@ -1056,8 +1197,8 @@ ul {
 }
 
 .ocupado .status-pill {
-  background: rgba(250, 204, 21, 0.14);
-  color: #fde68a;
+  background: rgba(34, 197, 94, 0.14);
+  color: #86efac;
 }
 
 .solicitado .status-pill {
@@ -1086,7 +1227,9 @@ ul {
 
 .acoes-botoes {
   display: flex;
-  justify-content: flex-end;
+  max-width: 100%;
+  flex-wrap: wrap;
+  justify-content: flex-start;
   gap: 6px;
 }
 
@@ -1142,6 +1285,18 @@ ul {
 
 .btn-cancelar::before {
   content: "×";
+}
+
+.acoes-botoes .btn-confirmar,
+.acoes-botoes .btn-cancelar {
+  min-width: 76px;
+  padding: 0 9px;
+  font-size: 10px;
+}
+
+.acoes-botoes .btn-confirmar::before,
+.acoes-botoes .btn-cancelar::before {
+  display: none;
 }
 
 .btn-editar {
@@ -1510,7 +1665,7 @@ ul {
   }
 
   #lista > li.ocupado {
-    border-left-color: #facc15;
+    border-left-color: #22c55e;
   }
 
   #lista > li.solicitado {
@@ -1545,6 +1700,10 @@ ul {
   }
 
   .item-acoes {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
     padding-top: 4px;
   }
 

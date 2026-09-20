@@ -50,6 +50,8 @@ const adminProximoMes = document.getElementById("adminProximoMes");
 const adminMenuToggle = document.getElementById("adminMenuToggle");
 const sidebarBackdrop = document.getElementById("sidebarBackdrop");
 const dataHojeTopo = document.querySelector(".data-hoje");
+const notificacoesAgendamentos = document.getElementById("notificacoesAgendamentos");
+const contadorAgendamentos = document.getElementById("contadorAgendamentos");
 const formServico = document.getElementById("formServico");
 const novoServicoNome = document.getElementById("novoServicoNome");
 const novoServicoPreco = document.getElementById("novoServicoPreco");
@@ -215,6 +217,10 @@ document.querySelectorAll(".side-nav a, .bottom-nav a, .brand").forEach((link) =
     event.preventDefault();
     abrirSecaoPainel(secao);
   });
+});
+
+notificacoesAgendamentos?.addEventListener("click", () => {
+  abrirSecaoPainel("agendamentos");
 });
 
 function atualizarCamposCliente() {
@@ -489,7 +495,7 @@ function obterInfoStatusHorario(status) {
     },
     ocupado: {
       texto: "Confirmado",
-      dot: "poucas"
+      dot: "finalizado"
     },
     finalizado: {
       texto: "Finalizado",
@@ -511,7 +517,7 @@ function obterInfoStatusHorario(status) {
 
   return mapa[status] || {
     texto: "Marcado",
-    dot: "poucas"
+    dot: "finalizado"
   };
 }
 
@@ -1141,6 +1147,20 @@ function atualizarResumo(dados) {
   document.getElementById("totalHorarios").textContent = solicitados;
   document.getElementById("totalLivres").textContent = livres;
   document.getElementById("totalOcupados").textContent = ocupados;
+  atualizarNotificacoes(solicitados);
+}
+
+function atualizarNotificacoes(total) {
+  if (!notificacoesAgendamentos || !contadorAgendamentos) return;
+
+  const descricao = total === 1
+    ? "1 solicitação pendente"
+    : `${total} solicitações pendentes`;
+
+  contadorAgendamentos.textContent = total > 99 ? "99+" : total;
+  notificacoesAgendamentos.classList.toggle("tem-notificacoes", total > 0);
+  notificacoesAgendamentos.setAttribute("aria-label", descricao);
+  notificacoesAgendamentos.title = descricao;
 }
 
 adminMesAnterior.addEventListener("click", () => {
@@ -1213,6 +1233,7 @@ onAuthStateChanged(auth, async (user) => {
   } else {
     login.classList.remove("hidden");
     painel.classList.add("hidden");
+    atualizarNotificacoes(0);
 
     if (cancelarListenerHorarios) {
       cancelarListenerHorarios();
@@ -1504,14 +1525,18 @@ function renderizarHorarios(dados) {
     const barbeiroNome = h.barber || "—";
     const horaTexto = h.hora || "--:--";
     const bloqueioDia = h.tipoBloqueio === "dia";
+    const podeEditar = !(bloqueioDia || !["ocupado", "livre", "bloqueado"].includes(h.status));
     const editarAcao = h.status === "ocupado" && !h.padrao
       ? `editarAgendamentoConfirmado('${h.id}')`
       : h.padrao
       ? `editarHorarioPadrao('${h.data}', '${h.hora}', '${h.barber}')`
       : `editarHorario('${h.id}')`;
-    const excluirAcao = h.padrao
-      ? `bloquearHorarioPadrao('${h.data}', '${h.hora}', '${h.barber}')`
-      : `excluir('${h.id}')`;
+    const acoesSolicitacao = h.status === "solicitado"
+      ? `
+          <button class="btn-confirmar" title="Confirmar solicitação" aria-label="Confirmar solicitação" onclick="confirmarSolicitacao('${h.id}')">Confirmar</button>
+          <button class="btn-cancelar" title="Cancelar solicitação" aria-label="Cancelar solicitação" onclick="cancelarSolicitacao('${h.id}')">Cancelar</button>
+        `
+      : "";
 
     lista.innerHTML += `
       <li class="${h.status}">
@@ -1546,21 +1571,8 @@ function renderizarHorarios(dados) {
         <div class="item-acoes table-cell">
           <span class="cell-label">Ações</span>
           <div class="acoes-botoes">
-            ${
-              h.status === "solicitado"
-                ? `<button class="btn-confirmar" title="Confirmar agendamento" aria-label="Confirmar agendamento" onclick="confirmarSolicitacao('${h.id}')">Confirmar</button>
-                   <button class="btn-cancelar" title="Cancelar solicitação" aria-label="Cancelar solicitação" onclick="cancelarSolicitacao('${h.id}')">Cancelar</button>`
-                : ""
-            }
-            ${
-              h.status === "ocupado"
-                ? `<button class="btn-finalizar" title="Finalizar serviço" aria-label="Finalizar serviço" onclick="finalizarAgendamento('${h.id}')">Finalizar</button>
-                   <button class="btn-cancelar" title="Cancelar e liberar horário" aria-label="Cancelar e liberar horário" onclick="cancelar('${h.id}')">Cancelar</button>`
-                : ""
-            }
-
-            ${bloqueioDia || !["ocupado", "livre", "bloqueado"].includes(h.status) ? "" : `<button class="btn-editar" title="Editar horário" aria-label="Editar horário" onclick="${editarAcao}">Editar</button>`}
-            ${["solicitado", "cancelado"].includes(h.status) ? "" : `<button class="btn-delete" title="${h.padrao ? "Bloquear horário" : "Excluir registro"}" aria-label="${h.padrao ? "Bloquear horário" : "Excluir registro"}" onclick="${excluirAcao}">${h.padrao ? "Bloquear" : "Excluir"}</button>`}
+            ${acoesSolicitacao}
+            ${podeEditar ? `<button class="btn-editar" title="Editar horário" aria-label="Editar horário" onclick="${editarAcao}">Editar</button>` : ""}
           </div>
         </div>
       </li>
@@ -1629,11 +1641,25 @@ window.cancelarSolicitacao = async function (id) {
     return;
   }
 
+  const telefone = String(horario.telefone || "").replace(/\D/g, "");
+  const telefoneWhatsApp = telefone.startsWith("55") ? telefone : `55${telefone}`;
+  const mensagem = `Olá, ${horario.nome || "tudo bem"}. Não estaremos disponíveis nesse horário. Deseja escolher outra data/horário? Se sim, escolha novamente no site.`;
+  const urlWhatsApp = telefone
+    ? `https://wa.me/${telefoneWhatsApp}?text=${encodeURIComponent(mensagem)}`
+    : "";
+
   await update(ref(db, "horarios/" + id), {
     status: "cancelado",
     canceladoEm: new Date().toISOString()
   });
   await liberarHorarioSeFuturo(horario);
+
+  if (urlWhatsApp) {
+    window.open(urlWhatsApp, "_blank", "noopener,noreferrer");
+  } else {
+    mostrarMensagemAdmin("Solicitação cancelada, mas o cliente não possui telefone cadastrado.", "orange");
+    return;
+  }
 
   mostrarMensagemAdmin("Solicitação cancelada e horário liberado.", "orange");
 };
@@ -1893,6 +1919,8 @@ window.excluir = function (id) {
 
 // 🚪 LOGOUT
 window.logout = function () {
+  if (!confirm("Tem certeza de que deseja sair da sua conta?")) return;
+
   signOut(auth);
 };
 

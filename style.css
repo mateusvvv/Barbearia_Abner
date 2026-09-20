@@ -88,6 +88,77 @@ nav a:hover {
   color: #fff;
 }
 
+.nav-inicio,
+.nav-agendar {
+  display: none;
+}
+
+.nav-painel {
+  display: inline-flex;
+  background: #facc15;
+  color: #111827;
+  font-weight: 700;
+}
+
+.nav-painel:hover {
+  background: #facc15;
+  color: #030505;
+}
+
+.home-notificacoes {
+  position: absolute;
+  top: 50%;
+  right: calc(clamp(40px, 9vw, 160px) + 86px);
+  display: inline-flex;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(250, 204, 21, 0.24);
+  border-radius: 8px;
+  background: rgba(250, 204, 21, 0.08);
+  color: #facc15;
+  font-size: 18px;
+  transform: translateY(-50%);
+}
+
+.home-notificacoes:hover,
+.home-notificacoes.tem-notificacoes {
+  border-color: #facc15;
+  background: rgba(250, 204, 21, 0.18);
+}
+
+.home-notificacoes strong {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  display: none;
+  min-width: 19px;
+  height: 19px;
+  padding: 0 5px;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #05080a;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 10px;
+  line-height: 1;
+}
+
+.home-notificacoes.tem-notificacoes strong {
+  display: inline-flex;
+}
+
+@media (min-width: 901px) {
+  header nav {
+    position: absolute;
+    top: 50%;
+    right: clamp(40px, 9vw, 160px);
+    transform: translateY(-50%);
+  }
+}
+
 .menu-mobile {
   display: none;
   width: 58px;
@@ -1181,9 +1252,17 @@ footer {
     font-size: 15px;
   }
 
-  nav a[href="#"],
-  nav a[href="#agendamento"] {
+  nav a.nav-inicio,
+  nav a.nav-agendar {
+    display: inline-flex;
+  }
+
+  nav a.nav-painel {
     display: none;
+  }
+
+  .home-notificacoes {
+    right: calc(8vw + 62px);
   }
 
   nav a::after {
@@ -1477,13 +1556,14 @@ footer {
 
   .calendario-topo {
     order: 1;
-    grid-template-columns: 42px minmax(0, 1fr) 40px 40px;
-    gap: 10px;
+    grid-template-columns: 34px minmax(0, 1fr) 34px 34px;
+    gap: 4px;
     margin-bottom: 26px;
   }
 
   .calendario-topo strong {
-    font-size: 27px;
+    min-width: 0;
+    font-size: clamp(20px, 7vw, 27px);
   }
 
   .icone-calendario {
@@ -1493,7 +1573,7 @@ footer {
   }
 
   .btn-calendario {
-    width: 40px;
+    width: 34px;
     height: 40px;
     font-size: 40px;
   }
