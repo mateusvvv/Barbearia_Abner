@@ -459,7 +459,15 @@ listaAgendamentosCliente?.addEventListener("click", async (event) => {
         status: "cancelado",
         canceladoEm: new Date().toISOString()
       });
-      renderizarAgendamentosCliente();
+
+      const servico = horario.servico || (Array.isArray(horario.servicos)
+        ? horario.servicos.map((item) => item.nome).join(", ")
+        : "Serviço");
+      const mensagemCancelamento = `Olá, Barbearia Abner. Sou ${horario.nome || "cliente"} e gostaria de informar o cancelamento do meu agendamento de ${servico}, marcado para ${formatarDataBR(horario.data)} às ${horario.hora}.`;
+      const urlWhatsApp = "https://api.whatsapp.com/send?phone=558193205690&text="
+        + encodeURIComponent(mensagemCancelamento);
+
+      window.location.href = urlWhatsApp;
     } catch (error) {
       console.error("Erro ao cancelar agendamento:", error);
       alert("Não foi possível cancelar agora. Tente novamente.");
