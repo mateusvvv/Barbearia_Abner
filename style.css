@@ -144,7 +144,7 @@ nav a:hover {
   justify-content: center;
   border: 2px solid #05080a;
   border-radius: 999px;
-  background: #ef4444;
+  background: #22c55e;
   color: #fff;
   font-size: 10px;
   line-height: 1;
@@ -153,7 +153,7 @@ nav a:hover {
 .home-notificacoes .contador-cancelamentos {
   right: auto;
   left: -7px;
-  background: #3b82f6;
+  background: #ef4444;
 }
 
 .home-notificacoes.tem-notificacoes .contador-agendamentos,

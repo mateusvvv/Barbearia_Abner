@@ -9,7 +9,7 @@
 
   <title>Painel Admin</title>
 
-  <link rel="stylesheet" href="admin.css?v=20260920-9">
+  <link rel="stylesheet" href="admin.css?v=20260920-18">
 </head>
 <body>
 
@@ -56,6 +56,19 @@
       <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
       <div class="admin-main">
+        <div class="admin-topo">
+          <div>
+            <span class="eyebrow">Painel administrativo</span>
+            <h1>Gestão da barbearia</h1>
+          </div>
+          <div class="header-acoes">
+            <button class="notificacoes-btn hidden" id="notificacoesAgendamentos" type="button" aria-label="Nenhuma solicitação pendente" title="Solicitações pendentes">
+              <span aria-hidden="true">🔔</span>
+              <strong class="notificacoes-contador" id="contadorAgendamentos" aria-hidden="true">0</strong>
+            </button>
+          </div>
+        </div>
+
         <div class="mobile-menu-bar">
           <button class="menu-toggle" id="adminMenuToggle" type="button" aria-label="Abrir menu" aria-expanded="false">
             <span></span>
@@ -319,6 +332,7 @@
                 <h3>Financeiro</h3>
                 <p class="card-text">Acompanhe o lucro dos serviços finalizados.</p>
               </div>
+              <button type="button" class="btn btn-delete" id="btnLimparHistoricoFinanceiro">Apagar histórico</button>
             </div>
 
             <div class="financeiro-grid">
@@ -364,7 +378,7 @@
 
 </main>
 
-<script type="module" src="admin.js?v=20260920-8"></script>
+<script type="module" src="admin.js?v=20260920-19"></script>
 
 </body>
 </html>

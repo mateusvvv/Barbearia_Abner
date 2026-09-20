@@ -335,7 +335,7 @@ body.section-horarios .form-card {
   justify-content: center;
   border: 2px solid #05080a;
   border-radius: 999px;
-  background: #ef4444;
+  background: #22c55e;
   color: #fff;
   font-size: 10px;
   line-height: 1;
@@ -393,6 +393,29 @@ small {
 .msg {
   min-height: 24px;
   margin-top: 10px;
+}
+
+.msg-cancelamento {
+  animation: avisoCancelamento 0.55s ease both;
+  font-weight: 700;
+  text-shadow: 0 0 14px rgba(239, 68, 68, 0.35);
+}
+
+@keyframes avisoCancelamento {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+  }
+
+  60% {
+    opacity: 1;
+    transform: translateY(2px) scale(1.02);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .resumo-grid {
@@ -561,6 +584,45 @@ small {
   color: #aeb7c2;
   font-size: 12px;
   margin-top: 3px;
+}
+
+.cliente-contato {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+.cliente-contato > span {
+  margin-top: 3px;
+}
+
+.cliente-whatsapp {
+  display: inline-flex;
+  min-width: 55px;
+  height: 24px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 7px;
+  margin-top: 2px;
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  border-radius: 6px;
+  background: rgba(34, 197, 94, 0.14);
+  color: #86efac;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.cliente-whatsapp:hover,
+.cliente-whatsapp:focus-visible {
+  border-color: #4ade80;
+  background: rgba(34, 197, 94, 0.3);
+  transform: scale(1.08);
+  outline: none;
 }
 
 .horarios-panel .config-item {
@@ -1184,6 +1246,36 @@ ul {
   margin-top: 2px;
 }
 
+.servico-resumo {
+  display: grid;
+  gap: 3px;
+  min-width: 130px;
+}
+
+.servico-detalhe {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: #e5e7eb;
+  font-size: 12px;
+}
+
+.servico-detalhe strong {
+  color: #facc15;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.servico-total {
+  display: block;
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
+  color: #86efac;
+  font-size: 12px;
+}
+
 .cell-label {
   display: none;
 }
@@ -1332,6 +1424,37 @@ ul {
 
 .btn-delete::before {
   content: "×";
+}
+
+#btnLimparHistoricoFinanceiro {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 10px;
+  border-color: rgba(248, 113, 113, 0.45);
+  border-radius: 6px;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(190, 24, 93, 0.2));
+  color: #cbd5e1;
+  font-size: 11px;
+  font-weight: 600;
+  box-shadow: 0 5px 16px rgba(239, 68, 68, 0.12);
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#btnLimparHistoricoFinanceiro::before {
+  content: "🗑";
+  display: inline;
+  font-size: 13px;
+  line-height: 1;
+}
+
+#btnLimparHistoricoFinanceiro:hover {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.38), rgba(190, 24, 93, 0.34)) !important;
+  border-color: rgba(248, 113, 113, 0.75);
+  color: #fff !important;
+  box-shadow: 0 8px 22px rgba(239, 68, 68, 0.22);
+  transform: translateY(-1px);
 }
 
 .modal-agendamento {

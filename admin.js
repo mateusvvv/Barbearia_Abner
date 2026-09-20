@@ -62,6 +62,7 @@ const lucroTotal = document.getElementById("lucroTotal");
 const totalServicosPagos = document.getElementById("totalServicosPagos");
 const ticketMedio = document.getElementById("ticketMedio");
 const listaFinanceiro = document.getElementById("listaFinanceiro");
+const btnLimparHistoricoFinanceiro = document.getElementById("btnLimparHistoricoFinanceiro");
 const listaClientes = document.getElementById("listaClientes");
 const formBloqueioPadrao = document.getElementById("formBloqueioPadrao");
 const bloqueioPadraoAtivo = document.getElementById("bloqueioPadraoAtivo");
@@ -711,18 +712,44 @@ function renderizarFinanceiro(dados) {
   }).join("");
 }
 
+btnLimparHistoricoFinanceiro?.addEventListener("click", async () => {
+  const finalizados = horariosCadastrados.filter((horario) => horario.status === "finalizado");
+
+  if (finalizados.length === 0) {
+    mostrarMensagemAdmin("Nenhum histórico financeiro para apagar.", "orange");
+    return;
+  }
+
+  if (!confirm(`Apagar os ${finalizados.length} serviço${finalizados.length === 1 ? "" : "s"} finalizado${finalizados.length === 1 ? "" : "s"} do histórico financeiro? Essa ação não pode ser desfeita.`)) {
+    return;
+  }
+
+  await Promise.all(finalizados.map((horario) => remove(ref(db, "horarios/" + horario.id))));
+  mostrarMensagemAdmin("🗑️ Histórico financeiro apagado.", "orange");
+});
+
 function renderizarClientes(dados) {
   if (!listaClientes) return;
 
   const clientes = dados
     .filter(h => h.status === "ocupado" && h.nome)
-    .map((horario) => ({
-      nome: horario.nome,
-      telefone: horario.telefone || "Sem contato",
-      servico: horario.servico || "Serviço não informado",
-      data: horario.data,
-      hora: horario.hora
-    }));
+    .map((horario) => {
+      const servicos = obterServicosDoHorario(horario);
+      const telefone = String(horario.telefone || "").trim();
+      const numeroWhatsApp = telefone.replace(/\D/g, "");
+
+      return {
+        nome: horario.nome,
+        telefone: telefone || "Sem contato",
+        telefoneWhatsApp: numeroWhatsApp
+          ? (numeroWhatsApp.startsWith("55") ? numeroWhatsApp : `55${numeroWhatsApp}`)
+          : "",
+        servicos,
+        totalServicos: servicos.reduce((total, servicoItem) => total + Number(servicoItem.preco || 0), 0),
+        data: horario.data,
+        hora: horario.hora
+      };
+    });
 
   if (clientes.length === 0) {
     listaClientes.innerHTML = '<p class="empty-state">Nenhum cliente com agendamento marcado.</p>';
@@ -734,10 +761,25 @@ function renderizarClientes(dados) {
       <div class="cliente-item">
         <div>
           <strong>${escaparHTML(cliente.nome)}</strong>
-          <span>${escaparHTML(cliente.telefone)}</span>
+          <div class="cliente-contato">
+            <span>${escaparHTML(cliente.telefone)}</span>
+            ${cliente.telefoneWhatsApp
+              ? `<a class="cliente-whatsapp" href="https://wa.me/${cliente.telefoneWhatsApp}" target="_blank" rel="noopener noreferrer" aria-label="Abrir contato de ${escaparHTML(cliente.nome)}" title="Abrir contato no WhatsApp"><span aria-hidden="true">Contato</span></a>`
+              : ""}
+          </div>
         </div>
         <div>
-          <strong>${escaparHTML(cliente.servico)}</strong>
+          <div class="servico-resumo">
+            ${cliente.servicos.length
+              ? cliente.servicos.map((servicoItem) => `
+                  <span class="servico-detalhe">
+                    <span>${escaparHTML(servicoItem.nome)}</span>
+                    <strong>${formatarMoeda(servicoItem.preco)}</strong>
+                  </span>
+                `).join("")
+              : "<span>Serviço não informado</span>"}
+            <strong class="servico-total">Total: ${formatarMoeda(cliente.totalServicos)}</strong>
+          </div>
           <span>${escaparHTML(formatarData(cliente.data))} às ${escaparHTML(cliente.hora)}</span>
         </div>
       </div>
@@ -1028,6 +1070,12 @@ function atualizarPassoHora() {
 function mostrarMensagemAdmin(texto, cor) {
   msgAdmin.innerHTML = texto;
   msgAdmin.style.color = cor;
+  msgAdmin.classList.remove("msg-cancelamento");
+
+  if (/cancelad|cancelamento/i.test(texto)) {
+    void msgAdmin.offsetWidth;
+    msgAdmin.classList.add("msg-cancelamento");
+  }
 
   clearTimeout(timerMensagemAdmin);
   timerMensagemAdmin = setTimeout(() => {
@@ -1472,10 +1520,8 @@ function renderizarHorarios(dados) {
   const termo = filtroHorarios.value.trim().toLowerCase();
   const barbeiroFiltro = filtroBarbeiroLista?.value || "todos";
   const dadosLista = obterDadosParaLista(dados);
-  const filtrarPorData = Boolean(dataAtivaAdmin && filtroStatusAtual === "todos");
 
   const filtrados = dadosLista.filter((h) => {
-    if (filtrarPorData && h.data !== dataAtivaAdmin) return false;
     if (filtroStatusAtual !== "todos" && h.status !== filtroStatusAtual) return false;
     if (barbeiroFiltro !== "todos" && h.barber !== barbeiroFiltro) return false;
 
@@ -1484,8 +1530,8 @@ function renderizarHorarios(dados) {
   });
 
   lista.innerHTML = "";
-  resumoFiltroLista.textContent = filtroStatusAtual === "todos" && dataAtivaAdmin
-    ? `Mostrando solicitados, confirmados, finalizados e cancelados de ${formatarData(dataAtivaAdmin)}.`
+  resumoFiltroLista.textContent = filtroStatusAtual === "todos"
+    ? "Mostrando solicitados, confirmados, finalizados e cancelados."
     : "Mostrando agendamentos do filtro selecionado.";
 
   if (filtrados.length === 0) {
@@ -1497,7 +1543,21 @@ function renderizarHorarios(dados) {
     const dataFormatada = formatarData(h.data);
     const statusInfo = obterInfoStatusHorario(h.status);
     const cliente = h.tipoBloqueio === "dia" ? "Dia bloqueado" : h.nome || "Vaga aberta";
-    const servico = h.servico || "—";
+    const servicosDoHorario = obterServicosDoHorario(h);
+    const totalServicos = servicosDoHorario.reduce((total, servicoItem) => total + Number(servicoItem.preco || 0), 0);
+    const servicoResumo = servicosDoHorario.length
+      ? `
+          <div class="servico-resumo">
+            ${servicosDoHorario.map((servicoItem) => `
+              <span class="servico-detalhe">
+                <span>${escaparHTML(servicoItem.nome)}</span>
+                <strong>${formatarMoeda(servicoItem.preco)}</strong>
+              </span>
+            `).join("")}
+            <strong class="servico-total">Total: ${formatarMoeda(totalServicos)}</strong>
+          </div>
+        `
+      : "—";
     const barbeiroNome = h.barber || "—";
     const horaTexto = h.hora || "--:--";
     const bloqueioDia = h.tipoBloqueio === "dia";
@@ -1512,6 +1572,9 @@ function renderizarHorarios(dados) {
           <button class="btn-confirmar" title="Confirmar solicitação" aria-label="Confirmar solicitação" onclick="confirmarSolicitacao('${h.id}')">Confirmar</button>
           <button class="btn-cancelar" title="Cancelar solicitação" aria-label="Cancelar solicitação" onclick="cancelarSolicitacao('${h.id}')">Cancelar</button>
         `
+      : "";
+    const acaoFinalizado = h.status === "finalizado" && filtroStatusAtual === "finalizado"
+      ? `<button class="btn-delete" title="Excluir serviço finalizado" aria-label="Excluir serviço finalizado" onclick="excluirFinalizado('${h.id}')">Excluir</button>`
       : "";
 
     lista.innerHTML += `
@@ -1533,7 +1596,7 @@ function renderizarHorarios(dados) {
         </div>
         <div class="table-cell">
           <span class="cell-label">Serviço</span>
-          <span>${escaparHTML(servico)}</span>
+          ${servicoResumo}
         </div>
         <div class="table-cell">
           <span class="cell-label">Barbeiro</span>
@@ -1548,6 +1611,8 @@ function renderizarHorarios(dados) {
           <span class="cell-label">Ações</span>
           <div class="acoes-botoes">
             ${acoesSolicitacao}
+            ${h.status === "ocupado" && filtroStatusAtual !== "todos" ? `<button class="btn-finalizar" title="Finalizar serviço" aria-label="Finalizar serviço" onclick="finalizarAgendamento('${h.id}')">Finalizar</button>` : ""}
+            ${acaoFinalizado}
             ${podeEditar ? `<button class="btn-editar" title="Editar horário" aria-label="Editar horário" onclick="${editarAcao}">Editar</button>` : ""}
           </div>
         </div>
@@ -1633,11 +1698,11 @@ window.cancelarSolicitacao = async function (id) {
   if (urlWhatsApp) {
     window.open(urlWhatsApp, "_blank", "noopener,noreferrer");
   } else {
-    mostrarMensagemAdmin("Solicitação cancelada, mas o cliente não possui telefone cadastrado.", "orange");
+    mostrarMensagemAdmin("❌📅 Solicitação cancelada, mas o cliente não possui telefone cadastrado.", "orange");
     return;
   }
 
-  mostrarMensagemAdmin("Solicitação cancelada e horário liberado.", "orange");
+  mostrarMensagemAdmin("✅❌📅 Solicitação cancelada e horário liberado!", "orange");
 };
 
 window.cancelar = async function (id) {
@@ -1665,12 +1730,12 @@ window.cancelar = async function (id) {
   });
   await liberarHorarioSeFuturo(horario);
 
-  mostrarMensagemAdmin("Agendamento cancelado e horário liberado.", "orange");
+  mostrarMensagemAdmin("✅❌📅 Agendamento cancelado e horário liberado!", "orange");
 
   if (urlWhatsApp) {
     window.location.href = urlWhatsApp;
   } else {
-    mostrarMensagemAdmin("Agendamento cancelado, mas o cliente não possui telefone cadastrado.", "orange");
+    mostrarMensagemAdmin("❌📅 Agendamento cancelado, mas o cliente não possui telefone cadastrado.", "orange");
   }
 
   return true;
@@ -1893,6 +1958,22 @@ window.excluir = function (id) {
 
     mostrarMensagemAdmin("🗑️ Horário excluído!", "orange");
   }
+};
+
+window.excluirFinalizado = async function (id) {
+  const horario = horariosCadastrados.find((item) => item.id === id);
+
+  if (!horario || horario.status !== "finalizado") {
+    mostrarMensagemAdmin("⚠️ Serviço finalizado não encontrado.", "orange");
+    return;
+  }
+
+  if (!confirm(`Excluir o serviço finalizado de ${horario.nome || "cliente"}? Essa ação não pode ser desfeita.`)) {
+    return;
+  }
+
+  await remove(ref(db, "horarios/" + id));
+  mostrarMensagemAdmin("🗑️ Serviço finalizado excluído.", "orange");
 };
 
 
