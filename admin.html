@@ -9,7 +9,7 @@
 
   <title>Painel Admin</title>
 
-  <link rel="stylesheet" href="admin.css?v=20260920-5">
+  <link rel="stylesheet" href="admin.css?v=20260920-9">
 </head>
 <body>
 
@@ -37,19 +37,18 @@
   <section id="painel" class="hidden">
     <div class="admin-shell">
       <aside class="sidebar" id="sidebarAdmin" aria-label="Menu administrativo">
-        <a class="brand" href="#dashboard" aria-label="Barbearia Abner painel">
+        <a class="brand" href="#agendamentos" aria-label="Barbearia Abner painel">
           <span>Barbearia</span>
           <strong>Abner</strong>
         </a>
 
         <nav class="side-nav">
-          <a class="nav-home" href="index.html"><span aria-hidden="true">🏠</span> Home</a>
-          <a class="active" href="#dashboard"><span aria-hidden="true">📊</span> Painel</a>
           <a href="#agendamentos"><span aria-hidden="true">📅</span> Agendamentos</a>
           <a href="#servicos"><span aria-hidden="true">✂️</span> Serviços</a>
           <a href="#horarios"><span aria-hidden="true">🕒</span> Horários</a>
           <a href="#clientes"><span aria-hidden="true">👥</span> Clientes</a>
           <a href="#financeiro"><span aria-hidden="true">💰</span> Financeiro</a>
+          <a class="nav-home" href="index.html"><span aria-hidden="true">🏠</span> Home</a>
         </nav>
 
         <div class="sidebar-footer">
@@ -60,45 +59,12 @@
       <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
       <div class="admin-main">
-        <!-- TOPO -->
-        <div class="header admin-topo" id="dashboard">
+        <div class="mobile-menu-bar">
           <button class="menu-toggle" id="adminMenuToggle" type="button" aria-label="Abrir menu" aria-expanded="false">
             <span></span>
             <span></span>
             <span></span>
           </button>
-
-          <div>
-            <span class="eyebrow">Administrador Isac</span>
-            <h1>Painel da Barbearia</h1>
-            <p class="topo-subtitulo">Gerencie seus agendamentos, serviços e horários.</p>
-          </div>
-
-          <div class="header-acoes">
-            <button class="notificacoes-btn hidden" id="notificacoesAgendamentos" type="button" aria-label="Nenhuma solicitação pendente" title="Solicitações pendentes">
-              <span aria-hidden="true">🔔</span>
-              <strong class="notificacoes-contador" id="contadorAgendamentos" aria-hidden="true">0</strong>
-            </button>
-            <span class="data-hoje">Hoje, 22 de abril de 2025</span>
-          </div>
-        </div>
-
-        <div class="resumo-grid painel-view" id="indicadores" data-painel-section="dashboard">
-          <div class="resumo-card">
-            <span>Solicitações pendentes</span>
-            <strong id="totalHorarios">0</strong>
-            <small>↑ 0% em relação a ontem</small>
-          </div>
-          <div class="resumo-card livre-card">
-            <span>Vagas disponíveis</span>
-            <strong id="totalLivres">0</strong>
-            <small>↑ 0% em relação a ontem</small>
-          </div>
-          <div class="resumo-card ocupado-card">
-            <span>Confirmados</span>
-            <strong id="totalOcupados">0</strong>
-            <small>↑ 0% em relação a ontem</small>
-          </div>
         </div>
 
         <div class="admin-layout">
@@ -137,7 +103,8 @@
                   </div>
                 </div>
 
-                <button type="button" class="btn btn-secundario btn-add-bloqueio" id="btnAdicionarBloqueioPadrao">+ Adicionar bloqueio</button>
+                <button type="button" class="btn btn-secundario btn-add-bloqueio" id="btnAdicionarBloqueioPadrao">Bloquear horário</button>
+                <button type="button" class="btn btn-secundario btn-bloquear-dia" id="btnBloquearDia">Bloquear dia</button>
                 <button type="submit" class="btn">Salvar bloqueio padrão</button>
                 <p id="msgBloqueioPadrao" class="msg"></p>
               </form>
@@ -214,7 +181,6 @@
               </div>
               <button type="button" id="btnGerarLote">Gerar horários</button>
               <button type="button" id="btnLimparLote">Limpar lista</button>
-              <button type="button" id="btnBloquearDia">Bloquear dia selecionado</button>
               <button type="button" id="btnSalvarHorario" onclick="adicionarHorario()">Salvar horário</button>
               <button type="button" id="btnCancelarEdicao" onclick="cancelarEdicao()">Cancelar edição</button>
             </div>
@@ -391,7 +357,6 @@
       </div>
 
       <nav class="bottom-nav" aria-label="Navegação principal mobile">
-        <a class="active" href="#dashboard"><span>◆</span> Painel</a>
         <a href="#agendamentos"><span>□</span> Agendamentos</a>
         <a href="#servicos"><span>✂</span> Serviços</a>
         <a href="#financeiro"><span>▥</span> Financeiro</a>
@@ -402,7 +367,7 @@
 
 </main>
 
-<script type="module" src="admin.js?v=20260920-7"></script>
+<script type="module" src="admin.js?v=20260920-8"></script>
 
 </body>
 </html>

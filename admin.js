@@ -49,7 +49,6 @@ const adminMesAnterior = document.getElementById("adminMesAnterior");
 const adminProximoMes = document.getElementById("adminProximoMes");
 const adminMenuToggle = document.getElementById("adminMenuToggle");
 const sidebarBackdrop = document.getElementById("sidebarBackdrop");
-const dataHojeTopo = document.querySelector(".data-hoje");
 const notificacoesAgendamentos = document.getElementById("notificacoesAgendamentos");
 const contadorAgendamentos = document.getElementById("contadorAgendamentos");
 const formServico = document.getElementById("formServico");
@@ -115,10 +114,6 @@ const horaFechamentoPadrao = "22:00";
 const intervaloPadraoAgenda = 30;
 
 const titulosSecoes = {
-  dashboard: {
-    titulo: "Painel da Barbearia",
-    subtitulo: "Resumo geral dos agendamentos e vagas."
-  },
   agendamentos: {
     titulo: "Agendamentos",
     subtitulo: "Confirme ou cancele as solicitações recebidas pelo site."
@@ -142,7 +137,6 @@ const titulosSecoes = {
 };
 
 const secoesPainel = new Set([
-  "dashboard",
   "agendamentos",
   "servicos",
   "horarios",
@@ -151,7 +145,7 @@ const secoesPainel = new Set([
 ]);
 
 function abrirSecaoPainel(secao) {
-  const secaoAtiva = secoesPainel.has(secao) ? secao : "dashboard";
+  const secaoAtiva = secoesPainel.has(secao) ? secao : "agendamentos";
   const tituloSecao = titulosSecoes[secaoAtiva];
 
   secoesPainel.forEach((item) => {
@@ -169,9 +163,6 @@ function abrirSecaoPainel(secao) {
     link.classList.toggle("active", alvo === secaoAtiva);
   });
 
-  document.querySelector(".admin-topo h1").textContent = tituloSecao.titulo;
-  document.querySelector(".topo-subtitulo").textContent = tituloSecao.subtitulo;
-
   if (window.location.hash !== `#${secaoAtiva}`) {
     history.replaceState(null, "", `#${secaoAtiva}`);
   }
@@ -180,19 +171,7 @@ function abrirSecaoPainel(secao) {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-abrirSecaoPainel(window.location.hash.replace("#", "") || "dashboard");
-
-if (dataHojeTopo) {
-  const hoje = new Date();
-  const dataFormatada = hoje.toLocaleDateString("pt-BR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric"
-  });
-
-  dataHojeTopo.textContent = `Hoje, ${dataFormatada.replace("-feira", "")}`;
-}
+abrirSecaoPainel(window.location.hash.replace("#", "") || "agendamentos");
 
 function fecharMenuAdmin() {
   document.body.classList.remove("sidebar-open");
@@ -1142,9 +1121,6 @@ function atualizarResumo(dados) {
   const ocupados = dados.filter(h => h.status === "ocupado").length;
   const solicitados = dados.filter(h => h.status === "solicitado").length;
 
-  document.getElementById("totalHorarios").textContent = solicitados;
-  document.getElementById("totalLivres").textContent = livres;
-  document.getElementById("totalOcupados").textContent = ocupados;
   atualizarNotificacoes(solicitados);
 }
 

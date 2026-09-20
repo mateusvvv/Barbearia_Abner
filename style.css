@@ -1266,7 +1266,9 @@ footer {
   }
 
   .home-notificacoes {
+    top: 50%;
     right: calc(8vw + 62px);
+    transform: translateY(-50%);
   }
 
   nav a::after {
