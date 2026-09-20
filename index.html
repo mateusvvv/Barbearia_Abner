@@ -8,7 +8,7 @@
   <!-- Fontes -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Cinzel:wght@600&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="style.css?v=20260920-6">
+  <link rel="stylesheet" href="style.css?v=20260920-16">
 </head>
 <body>
 
@@ -26,7 +26,8 @@
 
   <button class="home-notificacoes hidden" id="homeNotificacoes" type="button" aria-label="Nenhuma solicitação pendente" title="Solicitações pendentes">
     <span aria-hidden="true">🔔</span>
-    <strong id="homeNotificacoesContador" aria-hidden="true">0</strong>
+    <strong class="contador-agendamentos" id="homeNotificacoesContador" aria-hidden="true">0</strong>
+    <strong class="contador-cancelamentos" id="homeNotificacoesCancelamentos" aria-hidden="true">0</strong>
   </button>
 
   <button class="menu-mobile" type="button" aria-label="Abrir menu" aria-expanded="false">
@@ -227,6 +228,7 @@ const btnBuscarAgendamentos = document.getElementById("btnBuscarAgendamentos");
 const listaAgendamentosCliente = document.getElementById("listaAgendamentosCliente");
 const homeNotificacoes = document.getElementById("homeNotificacoes");
 const homeNotificacoesContador = document.getElementById("homeNotificacoesContador");
+const homeNotificacoesCancelamentos = document.getElementById("homeNotificacoesCancelamentos");
 let horarios = [];
 let servicosCadastrados = [];
 let bloqueioPadrao = {
@@ -250,17 +252,20 @@ const horaFechamentoPadrao = "22:00";
 const intervaloPadraoAgenda = 30;
 
 function atualizarNotificacaoHome() {
-  if (!homeNotificacoes || !homeNotificacoesContador) return;
+  if (!homeNotificacoes || !homeNotificacoesContador || !homeNotificacoesCancelamentos) return;
 
   const solicitacoes = adminAutenticado
     ? horarios.filter((horario) => horario.status === "solicitado").length
     : 0;
-  const descricao = solicitacoes === 1
-    ? "1 solicitação pendente"
-    : `${solicitacoes} solicitações pendentes`;
+  const cancelamentos = adminAutenticado
+    ? horarios.filter((horario) => horario.status === "cancelado").length
+    : 0;
+  const descricao = `${solicitacoes} ${solicitacoes === 1 ? "novo agendamento" : "novos agendamentos"}; ${cancelamentos} ${cancelamentos === 1 ? "cancelamento" : "cancelamentos"}`;
 
   homeNotificacoesContador.textContent = solicitacoes > 99 ? "99+" : solicitacoes;
+  homeNotificacoesCancelamentos.textContent = cancelamentos > 99 ? "99+" : cancelamentos;
   homeNotificacoes.classList.toggle("tem-notificacoes", solicitacoes > 0);
+  homeNotificacoes.classList.toggle("tem-cancelamentos", cancelamentos > 0);
   homeNotificacoes.setAttribute("aria-label", descricao);
   homeNotificacoes.title = descricao;
 }

@@ -150,7 +150,14 @@ nav a:hover {
   line-height: 1;
 }
 
-.home-notificacoes.tem-notificacoes strong {
+.home-notificacoes .contador-cancelamentos {
+  right: auto;
+  left: -7px;
+  background: #3b82f6;
+}
+
+.home-notificacoes.tem-notificacoes .contador-agendamentos,
+.home-notificacoes.tem-cancelamentos .contador-cancelamentos {
   display: inline-flex;
 }
 
@@ -756,6 +763,18 @@ button {
   content: "-";
 }
 
+.servicos-cliente[open] > summary {
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #ffd84d, #d4af37);
+  color: #080808;
+}
+
+.servicos-cliente[open] > summary strong,
+.servicos-cliente[open] > summary::after {
+  color: #080808;
+}
+
 .servico-opcao,
 .servicos-total {
   display: grid;
@@ -1226,19 +1245,16 @@ footer {
   }
 
   nav {
-    display: none;
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 12px;
-    left: 12px;
+    display: flex;
+    position: static;
     width: auto;
-    padding: 10px;
-    border: 1px solid rgba(212, 175, 55, 0.24);
-    border-radius: 8px;
-    background: rgba(8, 8, 8, 0.98);
-    box-shadow: 0 22px 50px rgba(0, 0, 0, 0.45);
-    flex-direction: column;
-    gap: 6px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    flex-direction: row;
+    gap: 0;
     justify-self: stretch;
   }
 
@@ -1263,11 +1279,22 @@ footer {
 
   nav a.nav-painel {
     display: inline-flex;
+    width: auto;
+    min-height: 38px;
+    padding: 8px 10px;
+    background: #facc15;
+    border: 0;
+    color: #111827;
+    font-size: 14px;
+  }
+
+  nav a.nav-painel::after {
+    content: none;
   }
 
   .home-notificacoes {
     top: 50%;
-    right: calc(8vw + 62px);
+    right: calc(8vw + 86px);
     transform: translateY(-50%);
   }
 
@@ -1279,7 +1306,7 @@ footer {
   }
 
   .menu-mobile {
-    display: inline-flex;
+    display: none;
     justify-self: end;
   }
 
@@ -1433,6 +1460,14 @@ footer {
 
   .formulario-coluna .form-agendamento > .servicos-cliente {
     grid-row: 3 / span 2;
+  }
+
+  .formulario-coluna .form-agendamento > .servicos-cliente:not([open]) {
+    align-self: start;
+    height: 48px;
+    min-height: 48px;
+    max-height: none;
+    overflow: visible;
   }
 
   .formulario-coluna .form-agendamento > #resumoEscolha {
@@ -1666,18 +1701,39 @@ footer {
     justify-self: center;
   }
 
-  .servicos-cliente {
+  .servicos-cliente[open] {
+    height: auto;
     max-height: 270px;
     overflow-y: auto;
+  }
+
+  .servicos-cliente:not([open]) {
+    display: block;
+    height: 48px;
+    max-height: none;
+    min-height: 48px;
+    overflow: visible;
+  }
+
+  .servicos-cliente:not([open]) > summary {
+    position: static;
+    margin: 0;
+    padding: 0;
   }
 
   .servicos-cliente > summary {
     position: sticky;
     top: 0;
     z-index: 1;
-    margin: -14px -14px 2px;
-    padding: 14px;
+    min-height: 30px;
+    margin: 0;
+    padding: 0;
     background: #101315;
+  }
+
+  .servicos-cliente {
+    gap: 6px;
+    padding: 8px 10px;
   }
 
   .gerenciar-agendamento {
