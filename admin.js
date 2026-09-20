@@ -81,10 +81,8 @@ const editarAgendamentoServico = document.getElementById("editarAgendamentoServi
 const editarAgendamentoServicosSelecionados = document.getElementById("editarAgendamentoServicosSelecionados");
 const msgEditarAgendamento = document.getElementById("msgEditarAgendamento");
 const btnFecharModalAgendamento = document.getElementById("btnFecharModalAgendamento");
-const btnCancelarModalAgendamento = document.getElementById("btnCancelarModalAgendamento");
 const btnAdicionarServicoAgendamento = document.getElementById("btnAdicionarServicoAgendamento");
-const btnCancelarHorarioModal = document.getElementById("btnCancelarHorarioModal");
-const btnExcluirRegistroModal = document.getElementById("btnExcluirRegistroModal");
+const btnCancelarAgendamentoModal = document.getElementById("btnCancelarAgendamentoModal");
 let horariosCadastrados = [];
 let cancelarListenerHorarios = null;
 let cancelarListenerServicos = null;
@@ -1669,12 +1667,19 @@ window.cancelar = async function (id) {
 
   if (!horario) {
     mostrarMensagemAdmin("⚠️ Agendamento não encontrado.", "orange");
-    return;
+    return false;
   }
 
   if (!confirm("Cancelar esse agendamento e liberar o horário?")) {
-    return;
+    return false;
   }
+
+  const telefone = String(horario.telefone || "").replace(/\D/g, "");
+  const telefoneWhatsApp = telefone.startsWith("55") ? telefone : `55${telefone}`;
+  const mensagemWhatsApp = `Olá, ${horario.nome || "tudo bem"}. Seu agendamento de ${formatarData(horario.data)} às ${horario.hora} foi cancelado. Entre em contato conosco para escolher outro horário.`;
+  const urlWhatsApp = telefone
+    ? `https://wa.me/${telefoneWhatsApp}?text=${encodeURIComponent(mensagemWhatsApp)}`
+    : "";
 
   await update(ref(db, "horarios/" + id), {
     status: "cancelado",
@@ -1683,6 +1688,14 @@ window.cancelar = async function (id) {
   await liberarHorarioSeFuturo(horario);
 
   mostrarMensagemAdmin("Agendamento cancelado e horário liberado.", "orange");
+
+  if (urlWhatsApp) {
+    window.location.href = urlWhatsApp;
+  } else {
+    mostrarMensagemAdmin("Agendamento cancelado, mas o cliente não possui telefone cadastrado.", "orange");
+  }
+
+  return true;
 };
 
 window.editarAgendamentoConfirmado = function (id) {
@@ -1722,7 +1735,13 @@ function fecharModalEditarAgendamento() {
 }
 
 btnFecharModalAgendamento?.addEventListener("click", fecharModalEditarAgendamento);
-btnCancelarModalAgendamento?.addEventListener("click", fecharModalEditarAgendamento);
+btnCancelarAgendamentoModal?.addEventListener("click", async () => {
+  const id = editarAgendamentoId.value;
+
+  if (id && await window.cancelar(id)) {
+    fecharModalEditarAgendamento();
+  }
+});
 
 modalEditarAgendamento?.addEventListener("click", (event) => {
   if (event.target === modalEditarAgendamento) {
@@ -1747,24 +1766,6 @@ btnAdicionarServicoAgendamento?.addEventListener("click", () => {
   editarAgendamentoServico.value = "";
   msgEditarAgendamento.textContent = "";
   renderizarServicosEdicao();
-});
-
-btnCancelarHorarioModal?.addEventListener("click", async () => {
-  const id = editarAgendamentoId.value;
-
-  if (!id) return;
-  fecharModalEditarAgendamento();
-  await window.cancelar(id);
-});
-
-btnExcluirRegistroModal?.addEventListener("click", async () => {
-  const id = editarAgendamentoId.value;
-
-  if (!id || !confirm("Excluir esse registro do painel?")) return;
-
-  await remove(ref(db, "horarios/" + id));
-  fecharModalEditarAgendamento();
-  mostrarMensagemAdmin("Registro excluído.", "orange");
 });
 
 formEditarAgendamento?.addEventListener("submit", async (event) => {

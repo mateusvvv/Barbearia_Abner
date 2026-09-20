@@ -1375,26 +1375,12 @@ ul {
   margin-top: 12px;
 }
 
-.modal-acoes-perigo {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 8px;
-}
-
-.modal-acoes .btn,
-.modal-acoes-perigo .btn {
+.modal-acoes .btn {
   margin-top: 0;
 }
 
-.btn-cancelar-modal {
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.32);
-  color: #fca5a5;
-}
-
-.btn-excluir-modal {
-  min-height: 44px;
+.modal-acoes .btn-cancelar::before {
+  display: none;
 }
 
 .servico-modal-picker {
@@ -1406,6 +1392,11 @@ ul {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 46px;
   gap: 8px;
+}
+
+.servico-add-row select {
+  font-size: 13px;
+  padding: 9px 10px;
 }
 
 .btn-add-servico {
@@ -1606,8 +1597,7 @@ ul {
   }
 
   .modal-agendamento-grid,
-  .modal-acoes,
-  .modal-acoes-perigo {
+  .modal-acoes {
     grid-template-columns: 1fr;
   }
 

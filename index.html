@@ -8,7 +8,7 @@
   <!-- Fontes -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Cinzel:wght@600&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=20260920-3">
 </head>
 <body>
 
@@ -21,13 +21,8 @@
   <nav aria-label="Menu principal">
     <a class="nav-inicio" href="#">Início</a>
     <a class="nav-agendar" href="#agendamento">Agendar</a>
-    <a class="nav-painel" href="admin.html">Painel</a>
+    <a class="nav-painel" href="admin.html?v=20260920-6">Painel</a>
   </nav>
-
-  <button class="home-notificacoes" id="homeNotificacoes" type="button" aria-label="Nenhuma solicitação pendente" title="Solicitações pendentes">
-    <span aria-hidden="true">🔔</span>
-    <strong id="homeNotificacoesContador" aria-hidden="true">0</strong>
-  </button>
 
   <button class="menu-mobile" type="button" aria-label="Abrir menu" aria-expanded="false">
     <span></span>
@@ -128,7 +123,7 @@
           <input type="text" id="nomeCliente" placeholder="Seu nome" autocomplete="name" required>
           <input type="tel" id="telefoneCliente" placeholder="Seu telefone" inputmode="tel" autocomplete="tel" pattern="[0-9+()\- ]{8,}" required>
 
-          <details class="servicos-cliente" id="servicosCliente" open>
+          <details class="servicos-cliente" id="servicosCliente">
             <summary>
               <span id="resumoServicosTexto">Escolha o serviço</span>
               <strong id="resumoServicosTotal">R$ 0,00</strong>
@@ -176,9 +171,8 @@
 </footer>
 
 <script type="module">
-import { db, auth } from "./firebase.js";
+import { db } from "./firebase.js";
 import { ref, push, onValue, remove, get, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 // MENU MOBILE
 const menuBtn = document.querySelector(".menu-mobile");
@@ -225,8 +219,6 @@ const barbeiroSelecionadoInput = document.getElementById("barbeiroSelecionado");
 const telefoneGerenciar = document.getElementById("telefoneGerenciar");
 const btnBuscarAgendamentos = document.getElementById("btnBuscarAgendamentos");
 const listaAgendamentosCliente = document.getElementById("listaAgendamentosCliente");
-const homeNotificacoes = document.getElementById("homeNotificacoes");
-const homeNotificacoesContador = document.getElementById("homeNotificacoesContador");
 let horarios = [];
 let servicosCadastrados = [];
 let bloqueioPadrao = {
@@ -237,7 +229,6 @@ let bloqueioPadrao = {
 };
 let dataAtiva = "";
 let mesVisivel = new Date();
-let adminAutenticado = false;
 const servicosPadrao = [
   { id: "padrao-corte", nome: "Corte", preco: 30, duracao: 30, padrao: true },
   { id: "padrao-barba", nome: "Barba", preco: 20, duracao: 30, padrao: true },
@@ -248,31 +239,6 @@ const barbeirosPadrao = ["Isac", "Carlos"];
 const horaAberturaPadrao = "08:00";
 const horaFechamentoPadrao = "22:00";
 const intervaloPadraoAgenda = 30;
-
-function atualizarNotificacaoHome() {
-  if (!homeNotificacoes || !homeNotificacoesContador) return;
-
-  const solicitacoes = adminAutenticado
-    ? horarios.filter((horario) => horario.status === "solicitado").length
-    : 0;
-  const descricao = solicitacoes === 1
-    ? "1 solicitação pendente"
-    : `${solicitacoes} solicitações pendentes`;
-
-  homeNotificacoesContador.textContent = solicitacoes > 99 ? "99+" : solicitacoes;
-  homeNotificacoes.classList.toggle("tem-notificacoes", solicitacoes > 0);
-  homeNotificacoes.setAttribute("aria-label", descricao);
-  homeNotificacoes.title = descricao;
-}
-
-onAuthStateChanged(auth, (user) => {
-  adminAutenticado = Boolean(user);
-  atualizarNotificacaoHome();
-});
-
-homeNotificacoes?.addEventListener("click", () => {
-  window.location.href = "admin.html#agendamentos";
-});
 
 function dataHojeChave() {
   const hoje = new Date();
@@ -991,8 +957,6 @@ onValue(ref(db, "horarios"), (snapshot) => {
   horarios.sort((a, b) => {
     return new Date(a.data + "T" + (a.hora || "00:00")) - new Date(b.data + "T" + (b.hora || "00:00"));
   });
-
-  atualizarNotificacaoHome();
 
   if (!dataAtiva) {
     const hoje = dataHojeChave();
